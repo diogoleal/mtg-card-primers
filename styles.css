@@ -1,0 +1,306 @@
+.mtg-card {
+	display: flex;
+	gap: var(--size-4-4);
+	align-items: flex-start;
+	flex-wrap: wrap;
+	padding: var(--size-4-3);
+	border: 1px solid var(--background-modifier-border);
+	border-radius: var(--radius-m);
+	background: var(--background-secondary);
+}
+
+.mtg-card-image {
+	width: 244px;
+	max-width: 100%;
+	border-radius: 4.75% / 3.5%;
+	flex: 0 0 auto;
+}
+
+.mtg-card-info {
+	flex: 1 1 220px;
+	min-width: 0;
+	display: flex;
+	flex-direction: column;
+	gap: var(--size-4-2);
+}
+
+.mtg-card-header {
+	display: flex;
+	justify-content: space-between;
+	gap: var(--size-4-2);
+	flex-wrap: wrap;
+}
+
+.mtg-card-name {
+	font-weight: var(--font-bold);
+	font-size: var(--font-ui-large);
+}
+
+.mtg-card-cost {
+	white-space: nowrap;
+}
+
+.mtg-card-type {
+	font-style: italic;
+	color: var(--text-muted);
+}
+
+.mtg-card-text {
+	white-space: pre-wrap;
+}
+
+.mtg-card-footer {
+	display: flex;
+	gap: var(--size-4-3);
+	font-size: var(--font-ui-smaller);
+	color: var(--text-faint);
+}
+
+.mtg-card-loading {
+	color: var(--text-muted);
+}
+
+.mtg-card-warning {
+	width: 100%;
+	font-size: var(--font-ui-small);
+	color: var(--text-warning);
+}
+
+.mtg-suggest-hint {
+	color: var(--text-muted);
+}
+
+.mtg-card-popup {
+	position: fixed;
+	z-index: var(--layer-popover);
+	width: 250px;
+	pointer-events: none;
+	filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.35));
+}
+
+.mtg-card-popup img {
+	display: block;
+	width: 100%;
+	aspect-ratio: 488 / 680;
+	border-radius: 4.75% / 3.5%;
+}
+
+.mtg-card-popup .mtg-card {
+	font-size: var(--font-ui-small);
+	box-shadow: var(--shadow-s);
+}
+
+/* Hide Obsidian's hover preview while a card link is hovered (our card popup replaces it). */
+/* A preview that contains the hovered link stays visible, or the link would vanish under the mouse. */
+body.mtg-card-hide-native-preview .popover.hover-popover:not(.mtg-card-keep-popover) {
+	display: none;
+}
+
+/* Mana symbols ({B}, {1}, {G/P}…) */
+img.mtg-mana {
+	display: inline-block;
+	width: 1em;
+	height: 1em;
+	margin: 0 0.05em;
+	vertical-align: -0.125em;
+	border-radius: 50%;
+	box-shadow: -0.04em 0.07em 0 rgba(0, 0, 0, 0.6);
+}
+
+/* Black glyphs without a circle ({Q}, {PW}, {E}…): no shadow, and inverted on dark themes. */
+img.mtg-mana.mtg-mana-glyph {
+	border-radius: 0;
+	box-shadow: none;
+}
+
+.theme-dark img.mtg-mana.mtg-mana-glyph {
+	filter: invert(1);
+}
+
+/* Loyalty shields ([+1], [−2], [0]) and level bands ([LEVEL 1-4]).
+   Colors follow the theme so they stay visible in light and dark mode. */
+.mtg-loyalty,
+.mtg-level {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	margin: 0 0.15em;
+	font-size: 0.78em;
+	font-weight: var(--font-bold);
+	font-variant-numeric: tabular-nums;
+	line-height: 1;
+	white-space: nowrap;
+	vertical-align: 0.05em;
+	color: var(--background-primary);
+	background: var(--text-normal);
+}
+
+.mtg-loyalty {
+	min-width: 2.1em;
+	height: 1.5em;
+	padding: 0 0.3em;
+}
+
+.mtg-loyalty-up {
+	padding-top: 0.25em;
+	clip-path: polygon(50% 0, 100% 30%, 100% 100%, 0 100%, 0 30%);
+}
+
+.mtg-loyalty-down {
+	padding-bottom: 0.25em;
+	clip-path: polygon(0 0, 100% 0, 100% 70%, 50% 100%, 0 70%);
+}
+
+.mtg-loyalty-zero {
+	border-radius: 0.2em;
+}
+
+.mtg-level {
+	height: 1.45em;
+	padding: 0 0.9em 0 0.45em;
+	letter-spacing: 0.04em;
+	clip-path: polygon(0 0, calc(100% - 0.55em) 0, 100% 50%, calc(100% - 0.55em) 100%, 0 100%);
+}
+
+/* Set symbols ({set:dsc:r}): Scryfall's SVG used as a mask over the rarity colour. */
+.mtg-set {
+	display: inline-block;
+	width: 1.2em;
+	height: 1em;
+	margin: 0 0.1em;
+	vertical-align: -0.15em;
+	background: var(--text-normal);
+	-webkit-mask: var(--mtg-set-icon) center / contain no-repeat;
+	mask: var(--mtg-set-icon) center / contain no-repeat;
+}
+
+.mtg-set.mtg-set-pending {
+	background: transparent;
+}
+
+.mtg-set.mtg-set-missing {
+	width: auto;
+	height: auto;
+	vertical-align: baseline;
+	-webkit-mask: none;
+	mask: none;
+	background: none;
+	font-size: 0.8em;
+	font-weight: var(--font-bold);
+	color: var(--text-muted);
+}
+
+.mtg-set-u {
+	background: linear-gradient(135deg, #d9e4ea 0%, #8a9aa4 55%, #5e6b73 100%);
+}
+
+.mtg-set-r {
+	background: linear-gradient(135deg, #f3dd8a 0%, #c9a43a 55%, #8a6b1c 100%);
+}
+
+.mtg-set-m {
+	background: linear-gradient(135deg, #fbb15a 0%, #e8601c 55%, #b5321a 100%);
+}
+
+.mtg-set-s,
+.mtg-set-b {
+	background: linear-gradient(135deg, #d4b3f0 0%, #9b67d4 55%, #6a3fa0 100%);
+}
+
+/* Card block footer: set symbol + code */
+.mtg-card-print {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.2em;
+}
+
+/* Edition picker */
+.mtg-print-suggestion {
+	display: flex;
+	align-items: center;
+	gap: var(--size-4-3);
+}
+
+.mtg-print-thumb {
+	width: 36px;
+	aspect-ratio: 488 / 680;
+	border-radius: 2px;
+	flex: 0 0 auto;
+	object-fit: cover;
+}
+
+.mtg-print-text {
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+}
+
+/* Commander brackets ([BRACKET 3], [B2-3]): 1 = calm, 5 = competitive. */
+.mtg-bracket {
+	--mtg-bracket-color: #6b7280;
+	display: inline-flex;
+	align-items: stretch;
+	margin: 0 0.15em;
+	font-size: 0.75em;
+	font-weight: var(--font-bold);
+	line-height: 1;
+	white-space: nowrap;
+	vertical-align: 0.08em;
+	border: 1px solid var(--mtg-bracket-color);
+	border-radius: 0.35em;
+	overflow: hidden;
+}
+
+.mtg-bracket-label {
+	padding: 0.25em 0.4em;
+	letter-spacing: 0.05em;
+	color: var(--mtg-bracket-color);
+	background: var(--background-primary);
+}
+
+.mtg-bracket-value {
+	padding: 0.25em 0.45em;
+	color: #fff;
+	background: var(--mtg-bracket-color);
+}
+
+.mtg-bracket-1 {
+	--mtg-bracket-color: #3b82f6;
+}
+
+.mtg-bracket-2 {
+	--mtg-bracket-color: #16a34a;
+}
+
+.mtg-bracket-3 {
+	--mtg-bracket-color: #ca8a04;
+}
+
+.mtg-bracket-4 {
+	--mtg-bracket-color: #ea580c;
+}
+
+.mtg-bracket-5 {
+	--mtg-bracket-color: #dc2626;
+}
+
+/* Ranges ([BRACKET 2-3]): gradient from the first to the last bracket colour. */
+.mtg-bracket-to-2 {
+	--mtg-bracket-to: #16a34a;
+}
+
+.mtg-bracket-to-3 {
+	--mtg-bracket-to: #ca8a04;
+}
+
+.mtg-bracket-to-4 {
+	--mtg-bracket-to: #ea580c;
+}
+
+.mtg-bracket-to-5 {
+	--mtg-bracket-to: #dc2626;
+}
+
+.mtg-bracket[class*='mtg-bracket-to-'] .mtg-bracket-value {
+	background: linear-gradient(90deg, var(--mtg-bracket-color), var(--mtg-bracket-to));
+}

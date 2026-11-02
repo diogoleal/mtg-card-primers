@@ -1,0 +1,10 @@
+{
+	"id": "mtg-card-primers",
+	"name": "MTG Card Primers",
+	"version": "0.8.1",
+	"minAppVersion": "1.5.7",
+	"description": "Write and read study notes (primers) for Magic: The Gathering cards, with card data from Scryfall.",
+	"author": "Diogo",
+	"authorUrl": "https://github.com/diogoleal",
+	"isDesktopOnly": false
+}
