@@ -1,7 +1,7 @@
 {
 	"name": "mtg-card-primers",
 	"version": "0.8.1",
-	"description": "Magic: The Gathering card primers in Obsidian, with card data from Scryfall.",
+	"description": "Write study primers for Magic: The Gathering cards with Scryfall data. Search names in any language, insert card text, art, images and set symbols, and show mana, loyalty and Commander bracket symbols and card hover previews.",
 	"main": "main.js",
 	"type": "module",
 	"scripts": {
