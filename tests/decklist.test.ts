@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { manaCurve, parseDecklist, lineFinish, sectionName, setViewOption, typeGroup, withPrinting } from '../src/decklist.ts';
+import { groupDeck, lineFinish, manaCurve, parseDecklist, sectionName, setDeckOption, setViewOption, typeGroup, withPrinting, type TypeGroup } from '../src/decklist.ts';
 
 test('Moxfield export with sections and options', () => {
 	const deck = parseDecklist(`title: Hunger Tide
@@ -119,4 +119,76 @@ test('foil and etched markers', () => {
 		[2, 'foil'],
 		[1, undefined],
 	]);
+});
+
+const card = (name: string, manaValue: number, group: TypeGroup, colors: string[] = []) => ({ name, manaValue, group, colors });
+const pool = [
+	card('Llanowar Elves', 1, 'Creature', ['G']),
+	card('Sol Ring', 1, 'Artifact'),
+	card('Grave Titan', 6, 'Creature', ['B']),
+	card('Forest', 0, 'Land'),
+	card('Assassin\'s Trophy', 2, 'Instant', ['B', 'G']),
+	card('Emrakul, the Aeons Torn', 15, 'Creature'),
+	card('Swords to Plowshares', 1, 'Instant', ['W']),
+];
+const labels = (sort: 'type' | 'name' | 'cmc' | 'color') =>
+	groupDeck(pool, sort).map((g) => `${g.label}: ${g.cards.map((c) => c.name).join(', ')}`);
+
+test('group by type (default): type order, mana value inside', () => {
+	assert.deepEqual(labels('type'), [
+		'Creatures: Llanowar Elves, Grave Titan, Emrakul, the Aeons Torn',
+		"Instants: Swords to Plowshares, Assassin's Trophy",
+		'Artifacts: Sol Ring',
+		'Lands: Forest',
+	]);
+});
+
+test('group by name: one A–Z list', () => {
+	assert.deepEqual(labels('name'), [
+		"Cards (A–Z): Assassin's Trophy, Emrakul, the Aeons Torn, Forest, Grave Titan, Llanowar Elves, Sol Ring, Swords to Plowshares",
+	]);
+});
+
+test('group by mana value: buckets, 7+, lands last', () => {
+	assert.deepEqual(labels('cmc'), [
+		'Mana value 1: Llanowar Elves, Sol Ring, Swords to Plowshares',
+		"Mana value 2: Assassin's Trophy",
+		'Mana value 6: Grave Titan',
+		'Mana value 7+: Emrakul, the Aeons Torn',
+		'Lands: Forest',
+	]);
+});
+
+test('group by colour: WUBRG, multicolor, colorless, lands', () => {
+	assert.deepEqual(labels('color'), [
+		'White: Swords to Plowshares',
+		'Black: Grave Titan',
+		'Green: Llanowar Elves',
+		"Multicolor: Assassin's Trophy",
+		'Colorless: Sol Ring, Emrakul, the Aeons Torn',
+		'Lands: Forest',
+	]);
+});
+
+test('sort option is parsed and written', () => {
+	assert.equal(parseDecklist('sort: Mana value\n1 Sol Ring').sort, 'cmc');
+	assert.equal(parseDecklist('sort: colour\n1 Sol Ring').sort, 'color');
+	assert.equal(parseDecklist('sort: banana\n1 Sol Ring').sort, undefined);
+	assert.equal(setDeckOption('view: grid\n1 Sol Ring', 'sort', 'name'), 'view: grid\nsort: name\n1 Sol Ring');
+	assert.equal(setDeckOption('sort: name\nview: grid\n1 Sol Ring', 'sort', 'cmc'), 'sort: cmc\nview: grid\n1 Sol Ring');
+});
+
+test('cards after a blank line under Commander are the deck (no "Deck" header)', () => {
+	const deck = parseDecklist('Commander\nGrist, The Hunder Tide\n\n1 Abrupt Decay (RTR) 141\n1 Sol Ring\n\nSideboard\n1 Duress');
+	assert.deepEqual(
+		deck.sections.map((s) => [s.name, s.entries.map((e) => e.query.name)]),
+		[
+			['Commander', ['Grist, The Hunder Tide']],
+			['Deck', ['Abrupt Decay', 'Sol Ring']],
+			['Sideboard', ['Duress']],
+		],
+	);
+	// partners listed together stay in Commander
+	const partners = parseDecklist('Commander\n1 Tymna the Weaver\n1 Thrasios, Triton Hero\n\n1 Sol Ring');
+	assert.deepEqual(partners.sections.map((s) => [s.name, s.entries.length]), [['Commander', 2], ['Deck', 1]]);
 });

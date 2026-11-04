@@ -8,6 +8,7 @@ export interface ScryfallCardFace {
 	mana_cost?: string;
 	type_line?: string;
 	oracle_text?: string;
+	colors?: string[];
 	power?: string;
 	toughness?: string;
 	loyalty?: string;
@@ -35,6 +36,7 @@ export interface ScryfallCard {
 	mana_cost?: string;
 	type_line?: string;
 	oracle_text?: string;
+	colors?: string[];
 	power?: string;
 	toughness?: string;
 	loyalty?: string;

@@ -1,6 +1,6 @@
 {
 	"name": "mtg-card-primers",
-	"version": "0.9.6",
+	"version": "0.9.8",
 	"description": "Write study primers for Magic: The Gathering cards and view decklists as text, card stacks or a grid. Scryfall data, names in any language, editions and foils, card hover previews, and mana, loyalty, set and bracket symbols.",
 	"main": "main.js",
 	"type": "module",

@@ -352,6 +352,18 @@ img.mtg-mana.mtg-mana-glyph {
 	background: var(--background-modifier-hover);
 }
 
+.mtg-deck-sort {
+	margin-left: auto;
+	height: auto;
+	padding-top: 3px;
+	padding-bottom: 3px;
+	font-size: var(--font-ui-small);
+}
+
+.mtg-deck-sort + .mtg-deck-toggle {
+	margin-left: 0;
+}
+
 .mtg-deck-toggle button {
 	height: auto;
 	padding: 2px var(--size-4-3);

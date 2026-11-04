@@ -5,6 +5,8 @@
 import { parseMoxfieldLine, type CardQuery } from './moxfield.ts';
 
 export type DeckView = 'text' | 'images' | 'grid';
+export type DeckSort = 'type' | 'name' | 'cmc' | 'color';
+export const DECK_SORTS: DeckSort[] = ['type', 'name', 'cmc', 'color'];
 
 /** Moxfield markers: *F* foil, *E* etched foil. */
 export type Finish = 'foil' | 'etched';
@@ -26,6 +28,7 @@ export interface DeckSection {
 export interface Decklist {
 	title?: string;
 	view?: DeckView;
+	sort?: DeckSort;
 	sections: DeckSection[];
 }
 
@@ -49,7 +52,7 @@ const KNOWN_SECTIONS: Record<string, string> = {
 };
 
 const QUANTITY = /^(\d{1,3})x?\s+/i;
-const OPTION = /^(title|view)\s*:\s*(.+)$/i;
+const OPTION = /^(title|view|sort)\s*:\s*(.+)$/i;
 
 /**
  * Reads a pasted decklist:
@@ -61,8 +64,8 @@ const OPTION = /^(title|view)\s*:\s*(.+)$/i;
  *   Deck
  *   1 Sol Ring (C21) 263
  * Section headers may also be written "// Sideboard", "SIDEBOARD:" or "Sideboard (15)".
- * A lone "Sideboard" line is also MTGA's blank-line convention: cards after the first blank line
- * of a header-less list are the sideboard.
+ * Blank lines: in a header-less list, cards after the first blank line are the sideboard (MTGA);
+ * after a Commander/Companion section, they are the deck (Moxfield and others omit the "Deck" header).
  */
 export function parseDecklist(source: string): Decklist {
 	const deck: Decklist = { sections: [] };
@@ -91,6 +94,7 @@ export function parseDecklist(source: string): Decklist {
 			const key = option[1]!.toLowerCase();
 			const value = option[2]!.trim();
 			if (key === 'title') deck.title = value;
+			else if (key === 'sort') deck.sort = parseSort(value) ?? deck.sort;
 			else if (/^images?$/i.test(value)) deck.view = 'images';
 			else if (/^grid$/i.test(value)) deck.view = 'grid';
 			else if (/^text$/i.test(value)) deck.view = 'text';
@@ -112,6 +116,8 @@ export function parseDecklist(source: string): Decklist {
 
 		// MTGA/MTGO: a header-less list where a blank line separates the sideboard.
 		if (!usedHeaders && blankAfterCards && current?.name === 'Deck') current = section('Sideboard');
+		// "Commander / 1 Grist / (blank) / 1 Sol Ring…": cards after a blank line under the commander are the deck.
+		if (blankAfterCards && (current?.name === 'Commander' || current?.name === 'Companion')) current = section('Deck');
 		blankAfterCards = false;
 		current ??= section('Deck');
 
@@ -200,11 +206,21 @@ export function manaCurve(cards: { quantity: number; manaValue: number; group: T
 	return curve;
 }
 
+/** "Mana value", "MV", "CMC" → 'cmc'; "colour" → 'color'… undefined when unknown. */
+function parseSort(value: string): DeckSort | undefined {
+	const v = value.toLowerCase().replace(/[^a-z]/g, '');
+	if (v === 'type' || v === 'types') return 'type';
+	if (v === 'name' || v === 'names') return 'name';
+	if (['cmc', 'mv', 'manavalue', 'cost', 'manacost'].includes(v)) return 'cmc';
+	if (v === 'color' || v === 'colour' || v === 'colors' || v === 'colours') return 'color';
+	return undefined;
+}
+
 /**
- * The block's source with its "view:" option set: replaces the existing line, or adds one at the top
- * (after "title:", if any). Leaves the cards untouched.
+ * The block's source with an option ("view: images", "sort: name") set: replaces the existing line,
+ * or adds one after the other options at the top. Leaves the cards untouched.
  */
-export function setViewOption(source: string, view: DeckView): string {
+export function setDeckOption(source: string, key: 'view' | 'sort', value: string): string {
 	const lines = source.split('\n');
 	let insertAt = 0;
 	for (let i = 0; i < lines.length; i++) {
@@ -212,15 +228,19 @@ export function setViewOption(source: string, view: DeckView): string {
 		if (!line) continue;
 		const option = OPTION.exec(line);
 		if (!option) break; // first card or section header: options are over
-		if (option[1]!.toLowerCase() === 'view') {
-			lines[i] = lines[i]!.replace(/^(\s*view\s*:\s*)[^\r]*/i, `$1${view}`);
+		if (option[1]!.toLowerCase() === key) {
+			lines[i] = lines[i]!.replace(new RegExp(`^(\\s*${key}\\s*:\\s*)[^\\r]*`, 'i'), `$1${value}`);
 			return lines.join('\n');
 		}
 		insertAt = i + 1;
 	}
 	const eol = lines[0]?.endsWith('\r') ? '\r' : '';
-	lines.splice(insertAt, 0, `view: ${view}${eol}`);
+	lines.splice(insertAt, 0, `${key}: ${value}${eol}`);
 	return lines.join('\n');
+}
+
+export function setViewOption(source: string, view: DeckView): string {
+	return setDeckOption(source, 'view', view);
 }
 
 // Trailing parts of a card line that must survive an edition change: "*F*", "*CMDR*", "#Ramp", "#!Removal".
@@ -241,4 +261,73 @@ export function withPrinting(line: string, set: string, collectorNumber: string)
 	}
 	rest = rest.replace(TRAILING_SET, '');
 	return `${rest} (${set.toUpperCase()}) ${collectorNumber}${suffix}`;
+}
+
+/** What sorting and grouping need to know about a card. */
+export interface SortableCard {
+	name: string;
+	manaValue: number;
+	group: TypeGroup;
+	/** Card colours (front face for double-faced cards): W U B R G; empty for colourless. */
+	colors: string[];
+}
+
+const COLOR_ORDER = ['W', 'U', 'B', 'R', 'G'];
+const COLOR_GROUPS = ['White', 'Blue', 'Black', 'Red', 'Green', 'Multicolor', 'Colorless', 'Lands'] as const;
+
+function colorGroup(card: SortableCard): (typeof COLOR_GROUPS)[number] {
+	if (card.group === 'Land') return 'Lands';
+	if (card.colors.length > 1) return 'Multicolor';
+	if (card.colors.length === 0) return 'Colorless';
+	return COLOR_GROUPS[COLOR_ORDER.indexOf(card.colors[0]!)] ?? 'Colorless';
+}
+
+function colorRank(card: SortableCard): number {
+	return COLOR_GROUPS.indexOf(colorGroup(card));
+}
+
+const byName = (a: SortableCard, b: SortableCard) => a.name.localeCompare(b.name);
+const byManaValue = (a: SortableCard, b: SortableCard) => a.manaValue - b.manaValue || byName(a, b);
+
+/** Order inside a group (and for sections that aren't split into groups, like the sideboard). */
+export function sortCardsBy<T extends SortableCard>(cards: T[], sort: DeckSort): T[] {
+	const compare =
+		sort === 'name'
+			? byName
+			: sort === 'color'
+				? (a: SortableCard, b: SortableCard) => colorRank(a) - colorRank(b) || byManaValue(a, b)
+				: sort === 'cmc'
+					? (a: SortableCard, b: SortableCard) =>
+							Number(a.group === 'Land') - Number(b.group === 'Land') || byManaValue(a, b)
+					: byManaValue;
+	return [...cards].sort(compare);
+}
+
+/**
+ * The main deck split into labelled groups:
+ *   type  → Creatures, Instants…, Lands (by mana value inside)
+ *   name  → one A–Z group
+ *   cmc   → "Mana value 0" … "Mana value 7+", then Lands (A–Z inside)
+ *   color → White, Blue, Black, Red, Green, Multicolor, Colorless, Lands (by mana value inside)
+ */
+export function groupDeck<T extends SortableCard>(cards: T[], sort: DeckSort): { label: string; cards: T[] }[] {
+	const groups: { label: string; cards: T[] }[] = [];
+	const add = (label: string, inGroup: T[], order: DeckSort) => {
+		if (inGroup.length) groups.push({ label, cards: sortCardsBy(inGroup, order) });
+	};
+	if (sort === 'name') {
+		add('Cards (A–Z)', cards, 'name');
+	} else if (sort === 'cmc') {
+		const spells = cards.filter((c) => c.group !== 'Land');
+		for (let mv = 0; mv <= 7; mv++) {
+			const label = mv === 7 ? 'Mana value 7+' : `Mana value ${mv}`;
+			add(label, spells.filter((c) => Math.min(7, Math.floor(c.manaValue)) === mv), 'name');
+		}
+		add('Lands', cards.filter((c) => c.group === 'Land'), 'name');
+	} else if (sort === 'color') {
+		for (const group of COLOR_GROUPS) add(group, cards.filter((c) => colorGroup(c) === group), 'type');
+	} else {
+		for (const group of TYPE_GROUPS) add(TYPE_GROUP_LABELS[group], cards.filter((c) => c.group === group), 'type');
+	}
+	return groups;
 }

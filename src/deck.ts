@@ -1,14 +1,16 @@
 import { Notice, setIcon, type MarkdownPostProcessorContext } from 'obsidian';
 import type { ScryfallCard } from './card';
 import {
+	DECK_SORTS,
+	groupDeck,
 	manaCurve,
 	parseDecklist,
-	setViewOption,
-	withPrinting,
-	TYPE_GROUP_LABELS,
-	TYPE_GROUPS,
+	setDeckOption,
+	sortCardsBy,
 	typeGroup,
+	withPrinting,
 	type DeckEntry,
+	type DeckSort,
 	type DeckView,
 	type TypeGroup,
 } from './decklist';
@@ -25,6 +27,7 @@ interface DeckCard {
 	manaCost: string;
 	manaValue: number;
 	group: TypeGroup;
+	colors: string[];
 	imageUrl?: string;
 }
 
@@ -34,6 +37,10 @@ interface Group {
 	/** Commander/companion section. */
 	featured?: boolean;
 }
+
+const SORT_LABELS: Record<DeckSort, string> = { type: 'Type', name: 'Name', cmc: 'Mana value', color: 'Color' };
+// Sections that count as the deck (card count, colours, curve); the rest are listed but not counted.
+const MAIN_SECTIONS = ['Commander', 'Companion', 'Deck'];
 
 /** Rewrites the block's source in the note; false when the block couldn't be located safely. */
 type EditBlock = (change: (source: string) => string) => Promise<boolean>;
@@ -79,24 +86,23 @@ export async function renderDeckBlock(
 	loading.remove();
 
 	const byEntry = new Map(entries.map((entry, i) => [entry, deckCard(entry, cards[i] ?? null)]));
-	const groups: Group[] = [];
-	for (const section of deck.sections) {
-		const sectionCards = mergeSameCard(section.entries.map((e) => byEntry.get(e)!));
-		if (section.name === 'Commander' || section.name === 'Companion') {
-			groups.push({ label: section.name, cards: sectionCards, featured: true });
-		} else if (section.name === 'Deck') {
-			for (const group of TYPE_GROUPS) {
-				const inGroup = sectionCards.filter((c) => c.group === group);
-				if (inGroup.length) groups.push({ label: TYPE_GROUP_LABELS[group], cards: sortCards(inGroup) });
-			}
-		} else {
-			groups.push({ label: section.name, cards: sortCards(sectionCards) });
-		}
-	}
+	const sections = deck.sections.map((section) => ({
+		name: section.name,
+		cards: mergeSameCard(section.entries.map((e) => byEntry.get(e)!)),
+	}));
+	const main = sections.filter((s) => MAIN_SECTIONS.includes(s.name)).flatMap((s) => s.cards);
 
-	const main = groups
-		.filter((g) => !['Sideboard', 'Maybeboard', 'Tokens', 'Attractions', 'Stickers'].includes(g.label))
-		.flatMap((g) => g.cards);
+	/** Commander/companion first as they are; the deck split by the chosen order; other sections sorted. */
+	const buildGroups = (by: DeckSort): Group[] =>
+		sections.flatMap((section): Group[] => {
+			if (section.name === 'Commander' || section.name === 'Companion') {
+				return [{ label: section.name, cards: section.cards, featured: true }];
+			}
+			if (section.name === 'Deck') return groupDeck(section.cards, by);
+			return [{ label: section.name, cards: sortCardsBy(section.cards, by) }];
+		});
+	let sort: DeckSort = deck.sort ?? 'type';
+	let groups = buildGroups(sort);
 
 	const edit: EditBlock = (change) => editBlock(plugin, source, el, ctx, change);
 	let view: DeckView = deck.view ?? 'text';
@@ -110,6 +116,12 @@ export async function renderDeckBlock(
 		for (const c of colors) appendManaSymbol(pips, `{${c}}`);
 	}
 	meta.createSpan({ text: `${count(main.map((c) => c.entry))} cards` });
+
+	const sortSelect = header.createEl('select', { cls: 'dropdown mtg-deck-sort', attr: { 'aria-label': 'Sort by' } });
+	for (const key of DECK_SORTS) {
+		const option = sortSelect.createEl('option', { text: `Sort: ${SORT_LABELS[key]}`, attr: { value: key } });
+		option.selected = key === sort;
+	}
 
 	const toggle = header.createDiv({ cls: 'mtg-deck-toggle', attr: { role: 'group', 'aria-label': 'Decklist view' } });
 	const buttons: Record<DeckView, HTMLButtonElement> = {
@@ -135,8 +147,15 @@ export async function renderDeckBlock(
 		e.stopPropagation(); // Live Preview: don't move the cursor into the block
 		if (next === view) return;
 		show(next);
-		void edit((src) => setViewOption(src, next));
+		void edit((src) => setDeckOption(src, 'view', next));
 	};
+	sortSelect.addEventListener('click', (e) => e.stopPropagation()); // Live Preview: keep the cursor out
+	sortSelect.addEventListener('change', () => {
+		sort = sortSelect.value as DeckSort;
+		groups = buildGroups(sort);
+		show(view);
+		void edit((src) => setDeckOption(src, 'sort', sort));
+	});
 	buttons.text.addEventListener('click', (e) => choose('text', e));
 	buttons.images.addEventListener('click', (e) => choose('images', e));
 	buttons.grid.addEventListener('click', (e) => choose('grid', e));
@@ -224,7 +243,7 @@ function replaceLine(source: string, from: string, to: string): string {
 
 function deckCard(entry: DeckEntry, card: ScryfallCard | null): DeckCard {
 	if (!card) {
-		return { entry, card, name: entry.query.name, manaCost: '', manaValue: 0, group: 'Other' };
+		return { entry, card, name: entry.query.name, manaCost: '', manaValue: 0, group: 'Other', colors: [] };
 	}
 	const front = card.card_faces?.[0];
 	const typeLine = card.type_line ?? front?.type_line ?? '';
@@ -237,6 +256,7 @@ function deckCard(entry: DeckEntry, card: ScryfallCard | null): DeckCard {
 		manaCost: card.mana_cost ?? front?.mana_cost ?? '',
 		manaValue: card.cmc ?? 0,
 		group: typeGroup(typeLine),
+		colors: card.colors ?? front?.colors ?? [],
 		imageUrl: images?.normal ?? images?.large ?? images?.small,
 	};
 }
@@ -252,10 +272,6 @@ function mergeSameCard(cards: DeckCard[]): DeckCard[] {
 		else out.push({ ...c });
 	}
 	return out;
-}
-
-function sortCards(cards: DeckCard[]): DeckCard[] {
-	return [...cards].sort((a, b) => a.manaValue - b.manaValue || a.name.localeCompare(b.name));
 }
 
 function count(entries: DeckEntry[]): number {
