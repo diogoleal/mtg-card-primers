@@ -9,6 +9,7 @@ export interface MtgCardPrimersSettings {
 	preferredPrint: PreferredPrint;
 	hoverPopup: boolean;
 	manaSymbols: boolean;
+	primerDecklist: boolean;
 }
 
 export const DEFAULT_SETTINGS: MtgCardPrimersSettings = {
@@ -17,11 +18,15 @@ export const DEFAULT_SETTINGS: MtgCardPrimersSettings = {
 	preferredPrint: 'given',
 	hoverPopup: true,
 	manaSymbols: true,
+	primerDecklist: true,
 };
 
 const TEMPLATE_DESC =
 	'Path of a note used as the initial body (e.g. Templates/Primer.md). ' +
-	'Supports {{name}}, {{front_name}} and {{oracle_id}}. Empty = default template.';
+	'Supports {{name}}, {{front_name}}, {{oracle_id}} and {{decklist}}. Empty = default template.';
+const DECKLIST_DESC =
+	'Adds a Decklist section to the default template, with an mtg-deck block that starts with the card ' +
+	'(as commander when it can be one). Custom templates can use {{decklist}} instead.';
 const PRINTING_DESC =
 	'Which printing goes into the frontmatter and the image. "As given" uses the set/number from the line ' +
 	"(or Scryfall's default printing when only a name is given). \"Latest\" uses the most recent paper printing.";
@@ -50,6 +55,12 @@ export class MtgCardPrimersSettingTab extends PluginSettingTab {
 				name: 'Template',
 				desc: TEMPLATE_DESC,
 				control: { type: 'file', key: 'templatePath', placeholder: 'Templates/primer.md', filter: (f) => f.extension === 'md' },
+			},
+			{
+				name: 'Decklist in new primers',
+				desc: DECKLIST_DESC,
+				aliases: ['mtg-deck', 'commander'],
+				control: { type: 'toggle', key: 'primerDecklist' },
 			},
 			{
 				name: 'Reference printing',
@@ -111,6 +122,16 @@ export class MtgCardPrimersSettingTab extends PluginSettingTab {
 						this.plugin.settings.templatePath = value.trim();
 						await this.plugin.saveSettings();
 					}),
+			);
+
+		new Setting(containerEl)
+			.setName('Decklist in new primers')
+			.setDesc(DECKLIST_DESC)
+			.addToggle((t) =>
+				t.setValue(this.plugin.settings.primerDecklist).onChange(async (value) => {
+					this.plugin.settings.primerDecklist = value;
+					await this.plugin.saveSettings();
+				}),
 			);
 
 		new Setting(containerEl)

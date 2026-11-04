@@ -140,7 +140,20 @@ tags: [mtg/primer]
 ---
 ```
 
-The body comes from the template. The default template has these sections: Summary, How to play, Synergies, Pitfalls / interactions, Decks I use it in.
+The body comes from the template. The default template has these sections: Summary, How to play, Synergies, Pitfalls / interactions, Decks I use it in, and Decklist.
+
+The Decklist section has an `mtg-deck` block that starts with the card. A card that can be your commander (a legendary creature, or one whose text says so) goes under `Commander` with an empty `Deck` below it; any other card goes under `Deck`:
+
+````markdown
+```mtg-deck
+Commander
+1 Grist, the Hunger Tide (MH2) 202
+
+Deck
+```
+````
+
+Turn off **Decklist in new primers** in the settings to leave it out. In a custom template, put `{{decklist}}` where you want the block.
 
 ### `mtg-card` block
 
@@ -300,7 +313,8 @@ The short form needs an uppercase `B` (`[b3]` stays as text). Links and code are
 ### Settings
 
 - **Primers folder** (default `MTG/Primers`).
-- **Template:** path of a note. Supports `{{name}}`, `{{front_name}}` and `{{oracle_id}}`. The template's own frontmatter is dropped.
+- **Template:** path of a note. Supports `{{name}}`, `{{front_name}}`, `{{oracle_id}}` and `{{decklist}}` (the starting `mtg-deck` block). The template's own frontmatter is dropped.
+- **Decklist in new primers** (on by default): adds the Decklist section to the default template.
 - **Hover popup** (on by default).
 - **Mana symbols** (on by default): turns all the symbols above on or off (mana, loyalty, level, set and bracket). Notes already open in reading view update when reopened.
 - **Reference printing:** the printing saved in new primers and listed first in the edition picker.

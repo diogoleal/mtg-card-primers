@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { groupDeck, lineFinish, manaCurve, parseDecklist, sectionName, setDeckOption, setViewOption, typeGroup, withPrinting, type TypeGroup } from '../src/decklist.ts';
+import { canBeCommander, groupDeck, lineFinish, manaCurve, parseDecklist, primerDecklist, sectionName, setDeckOption, setViewOption, typeGroup, withPrinting, type TypeGroup } from '../src/decklist.ts';
 
 test('Moxfield export with sections and options', () => {
 	const deck = parseDecklist(`title: Hunger Tide
@@ -191,4 +191,23 @@ test('cards after a blank line under Commander are the deck (no "Deck" header)',
 	// partners listed together stay in Commander
 	const partners = parseDecklist('Commander\n1 Tymna the Weaver\n1 Thrasios, Triton Hero\n\n1 Sol Ring');
 	assert.deepEqual(partners.sections.map((s) => [s.name, s.entries.length]), [['Commander', 2], ['Deck', 1]]);
+});
+
+test('primer decklist: commander or deck card', () => {
+	const grist = primerDecklist({
+		name: 'Grist, the Hunger Tide',
+		typeLine: 'Legendary Planeswalker — Grist',
+		oracleText: 'As long as Grist, the Hunger Tide isn\'t on the battlefield, it\'s a 1/1 Insect creature in addition to its other types.\nGrist, the Hunger Tide can be your commander.',
+		set: 'mh2',
+		collectorNumber: '202',
+	});
+	assert.equal(grist, '```mtg-deck\nCommander\n1 Grist, the Hunger Tide (MH2) 202\n\nDeck\n```');
+	assert.equal(parseDecklist(grist.split('\n').slice(1, -1).join('\n')).sections[0]!.name, 'Commander');
+
+	const bolt = primerDecklist({ name: 'Lightning Bolt', typeLine: 'Instant', oracleText: '', set: 'lea', collectorNumber: '161' });
+	assert.equal(bolt, '```mtg-deck\nDeck\n1 Lightning Bolt (LEA) 161\n```');
+
+	assert.ok(canBeCommander('Legendary Creature — Human // Legendary Planeswalker — Jace', ''));
+	assert.ok(!canBeCommander('Legendary Artifact', ''));
+	assert.ok(!canBeCommander('Instant // Legendary Creature — Spirit', ''));
 });

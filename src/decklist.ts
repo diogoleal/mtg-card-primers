@@ -331,3 +331,24 @@ export function groupDeck<T extends SortableCard>(cards: T[], sort: DeckSort): {
 	}
 	return groups;
 }
+
+/** Legendary creatures, and cards whose text says they can be your commander. */
+export function canBeCommander(typeLine: string, oracleText: string): boolean {
+	const front = typeLine.split('//')[0] ?? '';
+	if (/\bLegendary\b/i.test(front) && /\bCreature\b/i.test(front)) return true;
+	return /can be your commander/i.test(oracleText);
+}
+
+/** Starting `mtg-deck` block for a new primer: the card as commander when it can be one, else in the deck. */
+export function primerDecklist(card: {
+	name: string;
+	typeLine: string;
+	oracleText: string;
+	set: string;
+	collectorNumber: string;
+}): string {
+	const printing = card.set && card.collectorNumber ? ` (${card.set.toUpperCase()}) ${card.collectorNumber}` : '';
+	const line = `1 ${card.name}${printing}`;
+	const body = canBeCommander(card.typeLine, card.oracleText) ? `Commander\n${line}\n\nDeck\n` : `Deck\n${line}\n`;
+	return '```mtg-deck\n' + body + '```';
+}

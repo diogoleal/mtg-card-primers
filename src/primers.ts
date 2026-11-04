@@ -1,5 +1,6 @@
 import { App, normalizePath, stringifyYaml, TFile } from 'obsidian';
 import type { CardInfo } from './card';
+import { primerDecklist } from './decklist';
 import { frontFaceName } from './moxfield';
 import { sanitizeFileName } from './sanitize';
 import type { MtgCardPrimersSettings } from './settings';
@@ -16,6 +17,13 @@ export const DEFAULT_TEMPLATE = `\`\`\`mtg-card
 ## Pitfalls / interactions
 
 ## Decks I use it in
+`;
+
+/** Added to the default template when "Decklist in new primers" is on. */
+const DECKLIST_SECTION = `
+## Decklist
+
+{{decklist}}
 `;
 
 type Frontmatter = Record<string, unknown> | undefined;
@@ -61,7 +69,7 @@ export function buildFrontmatter(card: CardInfo): string {
 }
 
 async function loadTemplate(app: App, settings: MtgCardPrimersSettings): Promise<string> {
-	if (!settings.templatePath) return DEFAULT_TEMPLATE;
+	if (!settings.templatePath) return settings.primerDecklist ? DEFAULT_TEMPLATE + DECKLIST_SECTION : DEFAULT_TEMPLATE;
 	let path = normalizePath(settings.templatePath);
 	if (!path.endsWith('.md')) path += '.md';
 	const file = app.vault.getFileByPath(path);
@@ -75,7 +83,8 @@ function fillTemplate(template: string, card: CardInfo): string {
 	return template
 		.replace(/\{\{\s*name\s*\}\}/g, () => card.name)
 		.replace(/\{\{\s*front_name\s*\}\}/g, () => card.frontName)
-		.replace(/\{\{\s*oracle_id\s*\}\}/g, () => card.oracleId);
+		.replace(/\{\{\s*oracle_id\s*\}\}/g, () => card.oracleId)
+		.replace(/\{\{\s*decklist\s*\}\}/g, () => primerDecklist(card));
 }
 
 async function ensureFolder(app: App, folder: string): Promise<void> {
