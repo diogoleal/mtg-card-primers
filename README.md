@@ -1,17 +1,30 @@
-# MTG Card Primers (Obsidian)
+# MTG Card Primers
 
-Study notes ("primers") for Magic: The Gathering cards, with card data from [Scryfall](https://scryfall.com).
-One primer per card, identified by its `oracle_id`, so every printing of a card shares the same primer.
+Keep your Magic: The Gathering knowledge in Obsidian. Write a study note ("primer") for each card, paste your decklists and see them as cards, and use mana, loyalty and set symbols anywhere in your notes. Card data and images come from [Scryfall](https://scryfall.com).
+
+![A card primer with the card, its symbols and a hover preview](https://raw.githubusercontent.com/diogoleal/mtg-card-primers/main/docs/images/primer.png)
 
 ## Features
 
-- **Card primers:** one note per card, created from a template, with the card data in the frontmatter. Opening a card that already has a primer opens it instead of creating a duplicate.
-- **Card search:** by name with autocomplete, by Moxfield line (`1 Sol Ring (C21) 263 *F*`), or by the card's name in any language (`Anel Solar`, `Sonnenring`).
-- **Insert into notes:** card text, card art, the full card image of any edition, or the set symbol.
-- **`mtg-card` block:** renders a card (image, cost, type, oracle text, set symbol) inside a note, with an offline fallback.
-- **`mtg-deck` block:** shows a pasted decklist (Moxfield, Arena, MTGO) as a text list, stacks of card images or a grid of whole cards, with a mana curve. Pick each card's edition and mark foils.
-- **Hover popup:** hovering a `[[Card name]]` link shows the card.
-- **Symbols in notes:** mana `{1}{B}`, tap `{T}`, loyalty `[+1]`, level `[LEVEL 1-4]`, set symbols `{set:dsc:m}` and Commander brackets `[BRACKET 3]`.
+**Card primers**
+- **One note per card**, created from your template, with the card data saved in the frontmatter. Every printing of a card shares the same primer (it is keyed by `oracle_id`), and opening a card that already has one opens it instead of making a duplicate.
+- **Find any card:** by name with autocomplete, by pasting a Moxfield line (`1 Sol Ring (C21) 263 *F*`), or by its name in any language (`Anel Solar`, `Sonnenring`).
+- **Hover previews:** hovering a `[[Card name]]` link shows the card.
+
+**Decklists**
+- **`mtg-deck` block:** paste a list from Moxfield, Arena or MTGO and switch between a text list, stacks of cards or a grid of whole cards, with colour identity and mana curve.
+- **Your editions and foils:** pick the edition of each card and mark foils (`*F*`) and etched foils (`*E*`); the choice is saved in the note.
+
+![A decklist shown as stacks of cards](https://raw.githubusercontent.com/diogoleal/mtg-card-primers/main/docs/images/deck-images.png)
+
+**In any note**
+- **Symbols:** mana `{1}{B}`, tap `{T}`, loyalty `[+1]`, level `[LEVEL 1-4]`, set symbols `{set:dsc:m}` and Commander brackets `[BRACKET 3]`.
+- **Insert commands:** a card's text, its art, the full card image of any edition, or its set symbol.
+- **`mtg-card` block:** a card with image, cost, type and text inside a note; works offline from the primer's saved data.
+
+| Grid view | Text view | Edition picker |
+|---|---|---|
+| ![Grid view](https://raw.githubusercontent.com/diogoleal/mtg-card-primers/main/docs/images/deck-grid.png) | ![Text view](https://raw.githubusercontent.com/diogoleal/mtg-card-primers/main/docs/images/deck-text.png) | ![Edition picker](https://raw.githubusercontent.com/diogoleal/mtg-card-primers/main/docs/images/picker.png) |
 
 ### Syntax cheat sheet
 
@@ -26,7 +39,11 @@ One primer per card, identified by its `oracle_id`, so every printing of a card 
 | `[[Sol Ring]]`, `[[Anel Solar]]` | link with a card hover popup |
 | ` ```mtg-deck ` with a decklist inside | decklist viewer (text, images or grid) |
 
-## Manual installation
+## Installation
+
+In Obsidian, open **Settings → Community plugins → Browse**, search for **MTG Card Primers**, then install and enable it.
+
+### Manual installation
 
 ```bash
 npm install
