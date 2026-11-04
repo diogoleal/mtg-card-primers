@@ -60,6 +60,7 @@ export class ScryfallClient {
 	private nextAllowedAt = 0;
 	private cache = new Map<string, Promise<unknown>>();
 	private setsByCode: Promise<Map<string, SetInfo>> | null = null;
+	private icons = new Map<string, Promise<string>>();
 	private deckCards = new Map<string, Promise<ScryfallCard | null>>();
 	private readonly headers: Record<string, string>;
 
@@ -203,6 +204,19 @@ export class ScryfallClient {
 			this.setsByCode = null; // retry next time (e.g. back online)
 			throw e;
 		}
+	}
+
+	/** SVG text of a set icon (svgs.scryfall.io, a CDN outside the API rate limits), cached per session. */
+	setIconSvg(url: string): Promise<string> {
+		const cached = this.icons.get(url);
+		if (cached) return cached;
+		const text = requestUrl({ url, headers: { 'User-Agent': this.headers['User-Agent']! }, throw: false }).then((res) => {
+			if (res.status >= 400) throw new ScryfallError(`HTTP ${res.status}`, res.status);
+			return res.text;
+		});
+		this.icons.set(url, text);
+		text.catch(() => this.icons.delete(url));
+		return text;
 	}
 
 	/**

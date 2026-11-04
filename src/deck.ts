@@ -285,8 +285,10 @@ function deckColors(cards: DeckCard[]): string[] {
 
 function renderText(plugin: MtgCardPrimersPlugin, body: HTMLElement, groups: Group[], sourcePath: string): void {
 	const columns = body.createDiv({ cls: 'mtg-deck-columns' });
+	const groupEls: HTMLElement[] = [];
 	for (const group of groups) {
 		const groupEl = columns.createDiv({ cls: 'mtg-deck-group' });
+		groupEls.push(groupEl);
 		groupHeading(groupEl, group);
 		const list = groupEl.createEl('ul', { cls: 'mtg-deck-list' });
 		for (const c of group.cards) {
@@ -298,12 +300,53 @@ function renderText(plugin: MtgCardPrimersPlugin, body: HTMLElement, groups: Gro
 			if (c.manaCost) appendManaText(row.createSpan({ cls: 'mtg-deck-cost' }), c.manaCost.split(' // ')[0] ?? '');
 		}
 	}
+	layoutColumns(columns, groupEls, groups.map((g) => g.cards.length + 2));
 }
 
 /**
  * 'stacks': one column per group, cards overlap so only their name bar shows (hovering one shows it whole).
  * 'grid': whole cards, one grid per group.
  */
+const COLUMN_MIN_WIDTH = 240;
+const COLUMN_GAP = 32;
+const observers = new WeakMap<HTMLElement, ResizeObserver>();
+
+/**
+ * Text view: groups in as many columns as fit, filled in order and balanced by height (rows),
+ * like a newspaper. Re-laid out when the note's width changes.
+ */
+function layoutColumns(container: HTMLElement, items: HTMLElement[], rows: number[]): void {
+	let count = 0;
+	const layout = () => {
+		const width = container.clientWidth;
+		const fit = Math.floor((width + COLUMN_GAP) / (COLUMN_MIN_WIDTH + COLUMN_GAP));
+		const next = Math.max(1, Math.min(items.length, width > 0 ? fit : 1));
+		if (next === count) return;
+		count = next;
+		container.empty();
+		const cols = Array.from({ length: count }, () => container.createDiv({ cls: 'mtg-deck-column' }));
+		const total = rows.reduce((a, b) => a + b, 0);
+		let col = 0;
+		let filled = 0;
+		items.forEach((item, i) => {
+			const size = rows[i] ?? 1;
+			// Next column once this group's middle would pass this column's share.
+			if (col < count - 1 && filled > 0 && filled + size / 2 > (total * (col + 1)) / count) col++;
+			cols[col]!.appendChild(item);
+			filled += size;
+		});
+	};
+	layout();
+	observers.get(container)?.disconnect();
+	const win = container.ownerDocument.defaultView ?? window;
+	const observer = new win.ResizeObserver(() => {
+		if (!container.isConnected) observer.disconnect();
+		else layout();
+	});
+	observer.observe(container);
+	observers.set(container, observer);
+}
+
 function renderImages(
 	plugin: MtgCardPrimersPlugin,
 	body: HTMLElement,
@@ -323,7 +366,10 @@ function renderImages(
 				cls: c.entry.finish ? `mtg-deck-tile is-${c.entry.finish}` : 'mtg-deck-tile',
 				attr: { title: `${c.entry.quantity} ${c.name}${finish}\nClick: open primer in the side panel` },
 			});
-			if (c.entry.quantity > 1) tile.createSpan({ cls: 'mtg-deck-badge', text: `×${c.entry.quantity}` });
+			if (c.entry.quantity > 1) {
+				tile.addClass('has-copies');
+				tile.createSpan({ cls: 'mtg-deck-badge', text: `×${c.entry.quantity}` });
+			}
 			if (c.imageUrl) {
 				const img = tile.createEl('img', { attr: { src: c.imageUrl, alt: c.name, loading: 'lazy' } });
 				img.addEventListener('error', () => {

@@ -5,6 +5,7 @@ import { renderDeckBlock } from './deck';
 import { CardHoverPopup } from './hover';
 import { cardImageMarkdown, cardTextMarkdown, setSymbolToken } from './insert';
 import { configureSetLookup, replaceManaInElement } from './mana';
+import { removeRarityGradients } from './svg';
 import { manaLivePreview } from './mana-editor';
 import { CardSuggestModal, confirm, PrintSuggestModal } from './modal';
 import type { CardQuery } from './moxfield';
@@ -71,7 +72,11 @@ export default class MtgCardPrimersPlugin extends Plugin {
 				}),
 		});
 
-		configureSetLookup((code) => this.scryfall.setInfo(code));
+		configureSetLookup(
+			(code) => this.scryfall.setInfo(code),
+			(url) => this.scryfall.setIconSvg(url),
+		);
+		this.register(() => removeRarityGradients(document));
 
 		this.registerMarkdownCodeBlockProcessor('mtg-card', (source, el, ctx) =>
 			renderCardBlock(this, source, el, ctx),

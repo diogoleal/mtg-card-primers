@@ -141,14 +141,30 @@ img.mtg-mana.mtg-mana-glyph {
 	padding: 0 0.3em;
 }
 
+/* Shields and bands: an inline SVG shape behind the text (see svg.ts). */
+.mtg-loyalty-up,
+.mtg-loyalty-down,
+.mtg-level {
+	position: relative;
+	isolation: isolate;
+	background: none;
+}
+
+.mtg-shape {
+	position: absolute;
+	inset: 0;
+	z-index: -1;
+	width: 100%;
+	height: 100%;
+	fill: var(--text-normal);
+}
+
 .mtg-loyalty-up {
 	padding-top: 0.25em;
-	clip-path: polygon(50% 0, 100% 30%, 100% 100%, 0 100%, 0 30%);
 }
 
 .mtg-loyalty-down {
 	padding-bottom: 0.25em;
-	clip-path: polygon(0 0, 100% 0, 100% 70%, 50% 100%, 0 70%);
 }
 
 .mtg-loyalty-zero {
@@ -159,52 +175,55 @@ img.mtg-mana.mtg-mana-glyph {
 	height: 1.45em;
 	padding: 0 0.9em 0 0.45em;
 	letter-spacing: 0.04em;
-	clip-path: polygon(0 0, calc(100% - 0.55em) 0, 100% 50%, calc(100% - 0.55em) 100%, 0 100%);
 }
 
-/* Set symbols ({set:dsc:r}): Scryfall's SVG used as a mask over the rarity colour. */
+/* Set symbols ({set:dsc:r}): Scryfall's SVG inline, filled with the rarity colour (gradients in svg.ts). */
 .mtg-set {
 	display: inline-block;
 	width: 1.2em;
 	height: 1em;
 	margin: 0 0.1em;
 	vertical-align: -0.15em;
-	background: var(--text-normal);
-	-webkit-mask: var(--mtg-set-icon) center / contain no-repeat;
-	mask: var(--mtg-set-icon) center / contain no-repeat;
 }
 
-.mtg-set.mtg-set-pending {
-	background: transparent;
+.mtg-set svg {
+	display: block;
+	width: 100%;
+	height: 100%;
+	fill: var(--text-normal);
 }
 
 .mtg-set.mtg-set-missing {
 	width: auto;
 	height: auto;
 	vertical-align: baseline;
-	-webkit-mask: none;
-	mask: none;
-	background: none;
 	font-size: 0.8em;
 	font-weight: var(--font-bold);
 	color: var(--text-muted);
 }
 
-.mtg-set-u {
-	background: linear-gradient(135deg, #d9e4ea 0%, #8a9aa4 55%, #5e6b73 100%);
+.mtg-set-u svg {
+	fill: url(#mtg-rarity-u);
 }
 
-.mtg-set-r {
-	background: linear-gradient(135deg, #f3dd8a 0%, #c9a43a 55%, #8a6b1c 100%);
+.mtg-set-r svg {
+	fill: url(#mtg-rarity-r);
 }
 
-.mtg-set-m {
-	background: linear-gradient(135deg, #fbb15a 0%, #e8601c 55%, #b5321a 100%);
+.mtg-set-m svg {
+	fill: url(#mtg-rarity-m);
 }
 
-.mtg-set-s,
-.mtg-set-b {
-	background: linear-gradient(135deg, #d4b3f0 0%, #9b67d4 55%, #6a3fa0 100%);
+.mtg-set-s svg,
+.mtg-set-b svg {
+	fill: url(#mtg-rarity-s);
+}
+
+.mtg-svg-defs {
+	position: absolute;
+	width: 0;
+	height: 0;
+	overflow: hidden;
 }
 
 /* Card block footer: set symbol + code */
@@ -399,12 +418,17 @@ img.mtg-mana.mtg-mana-glyph {
 /* Text view */
 
 .mtg-deck-columns {
-	column-width: 240px;
-	column-gap: var(--size-4-8);
+	display: flex;
+	align-items: flex-start;
+	gap: 32px;
+}
+
+.mtg-deck-column {
+	flex: 1 1 0;
+	min-width: 0;
 }
 
 .mtg-deck-columns .mtg-deck-group {
-	break-inside: avoid;
 	margin-bottom: var(--size-4-4);
 }
 
@@ -495,7 +519,7 @@ img.mtg-mana.mtg-mana-glyph {
 }
 
 /* Several copies: a second card peeking out behind. */
-.mtg-deck-grid > .mtg-deck-tile:has(.mtg-deck-badge) {
+.mtg-deck-grid > .mtg-deck-tile.has-copies {
 	box-shadow:
 		4px 4px 0 -1px var(--background-secondary),
 		4px 4px 0 0 var(--background-modifier-border-hover);

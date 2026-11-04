@@ -2,13 +2,24 @@ import { MANA_SYMBOLS, SYMBOL_BASE_URL } from './mana-symbols';
 import { findInlineSymbols, splitOracleLine, type SymbolMatch } from './mana-scan';
 import { RARITY_NAMES } from './insert';
 import type { SetInfo } from './scryfall';
+import { appendShape, ensureRarityGradients, safeSvg } from './svg';
 
 /** Set by the plugin on load: finds a set's name and icon (Scryfall /sets, cached). */
 let lookupSet: ((code: string) => Promise<SetInfo | null>) | null = null;
+/** Set by the plugin on load: downloads a set icon's SVG text (cached). */
+let loadIcon: ((url: string) => Promise<string>) | null = null;
 
-export function configureSetLookup(fn: typeof lookupSet): void {
-	lookupSet = fn;
+export function configureSetLookup(find: typeof lookupSet, icon: typeof loadIcon): void {
+	lookupSet = find;
+	loadIcon = icon;
 }
+
+// Shapes in a 0–100 box: shield pointing up / down, band with an arrow on the right.
+const SHAPES = {
+	up: '50,0 100,30 100,100 0,100 0,30',
+	down: '0,0 100,0 100,70 50,100 0,70',
+	level: '0,0 90,0 100,50 90,100 0,100',
+};
 
 // Scryfall draws these as black glyphs with no circle; they get inverted in dark themes (see styles.css).
 const DARK_GLYPHS = new Set(['{Q}', '{E}', '{P}', '{PW}', '{CHAOS}', '{TK}', '{H}']);
@@ -37,18 +48,20 @@ export function appendManaSymbol(parent: HTMLElement, symbol: string): void {
 /** Loyalty cost shield: "+1" points up, "−2" points down, "0" is flat. Drawn with CSS, works offline. */
 export function appendLoyalty(parent: HTMLElement, value: string): void {
 	const dir = value.startsWith('+') ? 'up' : value.startsWith('−') ? 'down' : 'zero';
-	parent.createSpan({ cls: `mtg-loyalty mtg-loyalty-${dir}`, text: value, attr: { title: `Loyalty ${value}` } });
+	const span = parent.createSpan({ cls: `mtg-loyalty mtg-loyalty-${dir}`, text: value, attr: { title: `Loyalty ${value}` } });
+	if (dir !== 'zero') appendShape(span, SHAPES[dir]);
 }
 
 /** Level band badge, as printed on leveler cards ("LEVEL 1-4"). Drawn with CSS, works offline. */
 export function appendLevel(parent: HTMLElement, value: string): void {
-	parent.createSpan({ cls: 'mtg-level', text: `LEVEL ${value}` });
+	const span = parent.createSpan({ cls: 'mtg-level', text: `LEVEL ${value}` });
+	appendShape(span, SHAPES.level);
 }
 
 /**
- * Set symbol ("dsc" or "dsc:r"), drawn as a CSS mask over the rarity colour so it follows the theme.
- * The icon URL comes from Scryfall's set list; until it arrives the span is an empty placeholder,
- * and if it can't be found (unknown set, offline) the set code is shown as text.
+ * Set symbol ("dsc" or "dsc:r"): Scryfall's SVG drawn inline and filled with the rarity colour,
+ * so it follows the theme. Until it arrives the span is an empty placeholder; if it can't be
+ * found (unknown set, offline) the set code is shown as text.
  */
 export function appendSetSymbol(parent: HTMLElement, value: string): void {
 	const [code = '', rarity = 'c'] = value.split(':');
@@ -58,14 +71,19 @@ export function appendSetSymbol(parent: HTMLElement, value: string): void {
 		span.addClass('mtg-set-missing');
 		span.setText(code.toUpperCase());
 	};
-	if (!lookupSet) return fail();
+	if (!lookupSet || !loadIcon) return fail();
+	const icon = loadIcon;
 	lookupSet(code)
-		.then((info) => {
+		.then(async (info) => {
 			if (!info) return fail();
-			span.setCssProps({ '--mtg-set-icon': `url("${info.iconUrl}")` });
-			span.removeClass('mtg-set-pending');
 			const rarityName = RARITY_NAMES[rarity];
 			span.setAttr('title', `${info.name} (${code.toUpperCase()})${rarityName ? ` · ${rarityName}` : ''}`);
+			const svg = safeSvg(span.ownerDocument, await icon(info.iconUrl));
+			if (!svg) return fail();
+			ensureRarityGradients(span.ownerDocument);
+			span.empty();
+			span.appendChild(svg);
+			span.removeClass('mtg-set-pending');
 		})
 		.catch(fail);
 }
