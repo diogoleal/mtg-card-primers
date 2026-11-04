@@ -27,7 +27,11 @@ export interface ScryfallCard {
 	collector_number: string;
 	released_at?: string;
 	rarity?: string;
+	/** "nonfoil", "foil", "etched". */
+	finishes?: string[];
 	layout: string;
+	/** Mana value. */
+	cmc?: number;
 	mana_cost?: string;
 	type_line?: string;
 	oracle_text?: string;

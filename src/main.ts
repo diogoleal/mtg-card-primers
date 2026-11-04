@@ -1,6 +1,7 @@
 import { Editor, Notice, Plugin, TFile } from 'obsidian';
 import { toCardInfo, type CardInfo, type ScryfallCard } from './card';
 import { renderCardBlock } from './codeblock';
+import { renderDeckBlock } from './deck';
 import { CardHoverPopup } from './hover';
 import { cardImageMarkdown, cardTextMarkdown, setSymbolToken } from './insert';
 import { configureSetLookup, replaceManaInElement } from './mana';
@@ -72,6 +73,9 @@ export default class MtgCardPrimersPlugin extends Plugin {
 
 		this.registerMarkdownCodeBlockProcessor('mtg-card', (source, el, ctx) =>
 			renderCardBlock(this, source, el, ctx),
+		);
+		this.registerMarkdownCodeBlockProcessor('mtg-deck', (source, el, ctx) =>
+			renderDeckBlock(this, source, el, ctx),
 		);
 
 		new CardHoverPopup(this).register();

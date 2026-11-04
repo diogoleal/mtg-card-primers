@@ -26,6 +26,16 @@ interface ScryfallList<T> {
 	has_more?: boolean;
 }
 
+interface ScryfallCollection {
+	data: ScryfallCard[];
+	not_found: Record<string, string>[];
+}
+
+type Identifier = Record<string, string>;
+
+/** /cards/collection accepts at most 75 identifiers per request. */
+const COLLECTION_BATCH = 75;
+
 interface ScryfallSet {
 	code: string;
 	name: string;
@@ -50,6 +60,7 @@ export class ScryfallClient {
 	private nextAllowedAt = 0;
 	private cache = new Map<string, Promise<unknown>>();
 	private setsByCode: Promise<Map<string, SetInfo>> | null = null;
+	private deckCards = new Map<string, Promise<ScryfallCard | null>>();
 	private readonly headers: Record<string, string>;
 
 	constructor(version: string) {
@@ -211,6 +222,51 @@ export class ScryfallClient {
 		return this.englishPrint(await this.cardNamed(query.name, query.set));
 	}
 
+	/**
+	 * Many cards at once (decklists): one /cards/collection request per 75 cards, in the order given.
+	 * Lines Scryfall can't match exactly (typos, names in other languages) fall back to resolve().
+	 * null for a card that doesn't exist.
+	 */
+	cards(queries: CardQuery[]): Promise<(ScryfallCard | null)[]> {
+		const pending: { key: string; query: CardQuery }[] = [];
+		for (const query of queries) {
+			const key = JSON.stringify(identifier(query));
+			if (!this.deckCards.has(key) && !pending.some((p) => p.key === key)) pending.push({ key, query });
+		}
+		for (let i = 0; i < pending.length; i += COLLECTION_BATCH) {
+			const batch = pending.slice(i, i + COLLECTION_BATCH);
+			const found = this.collection(batch.map((p) => identifier(p.query)));
+			batch.forEach(({ key, query }, j) => {
+				const card = found
+					.then((cards) => cards[j] ?? this.resolveOrNull(query))
+					.then((c) => (c ? this.englishPrint(c) : null));
+				this.deckCards.set(key, card);
+				card.catch(() => this.deckCards.delete(key)); // retry next render (e.g. back online)
+			});
+		}
+		return Promise.all(queries.map((q) => this.deckCards.get(JSON.stringify(identifier(q)))!));
+	}
+
+	private async resolveOrNull(query: CardQuery): Promise<ScryfallCard | null> {
+		try {
+			return await this.resolve(query);
+		} catch (e) {
+			if (e instanceof ScryfallError && e.status === 404) return null;
+			throw e;
+		}
+	}
+
+	/** Cards for these identifiers, in order; null where Scryfall found nothing. */
+	private async collection(identifiers: Identifier[]): Promise<(ScryfallCard | null)[]> {
+		const res = await this.enqueue(
+			() => this.fetch<ScryfallCollection>(`${API}/cards/collection`, { identifiers }),
+			DELAY_SLOW,
+		);
+		const missing = new Set(res.not_found.map((id) => JSON.stringify(normalized(id))));
+		const cards = [...res.data];
+		return identifiers.map((id) => (missing.has(JSON.stringify(normalized(id))) ? null : (cards.shift() ?? null)));
+	}
+
 	private get<T>(path: string, params: Record<string, string>, delay: number): Promise<T> {
 		const qs = new URLSearchParams(params).toString();
 		const url = `${API}${path}${qs ? `?${qs}` : ''}`;
@@ -241,10 +297,21 @@ export class ScryfallClient {
 		return run;
 	}
 
-	private async fetch<T>(url: string): Promise<T> {
+	private async fetch<T>(url: string, body?: unknown): Promise<T> {
 		let res;
 		try {
-			res = await requestUrl({ url, method: 'GET', headers: this.headers, throw: false });
+			res = await requestUrl(
+				body === undefined
+					? { url, method: 'GET', headers: this.headers, throw: false }
+					: {
+							url,
+							method: 'POST',
+							headers: this.headers,
+							contentType: 'application/json',
+							body: JSON.stringify(body),
+							throw: false,
+						},
+			);
 		} catch (e) {
 			throw new ScryfallError(`Cannot reach Scryfall (${e instanceof Error ? e.message : String(e)}).`, 0);
 		}
@@ -265,4 +332,17 @@ export class ScryfallClient {
 		}
 		return res.json as T;
 	}
+}
+
+/** Scryfall collection identifier for a decklist line: exact printing when known, else name (and set). */
+function identifier(query: CardQuery): Identifier {
+	if (query.set && query.collectorNumber) return { set: query.set, collector_number: query.collectorNumber };
+	return query.set ? { name: query.name, set: query.set } : { name: query.name };
+}
+
+/** not_found echoes identifiers back; compare them case-insensitively with sorted keys. */
+function normalized(id: Identifier): Identifier {
+	const out: Identifier = {};
+	for (const k of Object.keys(id).sort()) out[k] = String(id[k]).toLowerCase();
+	return out;
 }

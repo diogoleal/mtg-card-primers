@@ -132,13 +132,21 @@ export class PrintSuggestModal extends SuggestModal<ScryfallCard> {
 		appendSetSymbol(title, setSymbolValue(p));
 		title.appendText(` ${p.set_name ?? p.set.toUpperCase()}`);
 		const rarity = RARITY_NAMES[setSymbolValue(p).split(':')[1] ?? ''];
-		const details = [`${p.set.toUpperCase()} #${p.collector_number}`, p.released_at?.slice(0, 4), rarity];
+		const details = [`${p.set.toUpperCase()} #${p.collector_number}`, p.released_at?.slice(0, 4), rarity, finishesLabel(p.finishes)];
 		text.createEl('small', { text: details.filter(Boolean).join(' · '), cls: 'mtg-suggest-hint' });
 	}
 
 	onChooseSuggestion(p: ScryfallCard): void {
 		this.onPick(p);
 	}
+}
+
+/** "foil", "foil only", "etched"…: which special finishes this printing exists in (nothing for non-foil only). */
+function finishesLabel(finishes: string[] | undefined): string | undefined {
+	const special = (finishes ?? []).filter((f) => f !== 'nonfoil');
+	if (special.length === 0) return undefined;
+	const label = special.join(' + ');
+	return finishes?.includes('nonfoil') ? label : `${label} only`;
 }
 
 /** Yes/no prompt. Resolves true only when the user confirms. */

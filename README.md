@@ -9,6 +9,7 @@ One primer per card, identified by its `oracle_id`, so every printing of a card 
 - **Card search:** by name with autocomplete, by Moxfield line (`1 Sol Ring (C21) 263 *F*`), or by the card's name in any language (`Anel Solar`, `Sonnenring`).
 - **Insert into notes:** card text, card art, the full card image of any edition, or the set symbol.
 - **`mtg-card` block:** renders a card (image, cost, type, oracle text, set symbol) inside a note, with an offline fallback.
+- **`mtg-deck` block:** shows a pasted decklist (Moxfield, Arena, MTGO) as a text list, stacks of card images or a grid of whole cards, with a mana curve. Pick each card's edition and mark foils.
 - **Hover popup:** hovering a `[[Card name]]` link shows the card.
 - **Symbols in notes:** mana `{1}{B}`, tap `{T}`, loyalty `[+1]`, level `[LEVEL 1-4]`, set symbols `{set:dsc:m}` and Commander brackets `[BRACKET 3]`.
 
@@ -23,6 +24,7 @@ One primer per card, identified by its `oracle_id`, so every printing of a card 
 | `{set:dsc}`, `{set:dsc:m}` | set symbol (optionally in a rarity colour) |
 | `[BRACKET 3]` / `[B3]`, `[BRACKET 2-3]` / `[B2-3]` | Commander bracket badge |
 | `[[Sol Ring]]`, `[[Anel Solar]]` | link with a card hover popup |
+| ` ```mtg-deck ` with a decklist inside | decklist viewer (text, images or grid) |
 
 ## Manual installation
 
@@ -141,6 +143,57 @@ The block renders the image (linked from Scryfall, not downloaded), cost, type l
 The card line can also be a name in another language (`Anel Solar`).
 **Offline or Scryfall down:** it shows the data saved in the frontmatter, with a warning. That is the note's own primer for an empty block, or the named card's primer if one exists in the vault.
 
+### `mtg-deck` block (decklists)
+
+Paste a decklist exported from Moxfield, Arena or MTGO inside an `mtg-deck` block:
+
+````markdown
+```mtg-deck
+title: Hunger Tide Aristocrats
+view: images
+
+Commander
+1 Grist, the Hunger Tide (DSC) 220 *F*
+
+Deck
+1 Sol Ring (C21) 263
+1 Anel Solar
+4 Swamp
+4 Forest
+
+Sideboard
+1 Imperial Seal
+```
+````
+
+The block has three views, chosen with the **Text | Images | Grid** buttons in its header:
+
+- **Text:** cards in columns by type (Commander, Creatures, Instants…, Lands, Sideboard), sorted by mana value, with their mana cost. Names work like `[[links]]`: hover shows the card, click opens its primer.
+- **Images:** one stack per type; the cards overlap so only their name bars show. Hover a card to see it whole.
+- **Grid:** every card whole, one grid per type.
+
+The header shows the deck's colour identity and card count; the footer shows the mana curve (lands not counted).
+
+**List format**
+
+- **Options** (optional, before the first card): `title:` (defaults to the commander's name) and `view:` (`text`, `images` or `grid`).
+- **Sections:** `Commander`, `Companion`, `Deck`, `Sideboard`, `Maybeboard`, `Tokens`… also written `// Sideboard`, `SIDEBOARD:` or `Sideboard (15)`. Without headers, every card is in the deck, and cards after a blank line are the sideboard (Arena export).
+- **Card lines:** the same as the card search: `4 Name`, `4x Name`, `(SET) 123` for an exact edition, names in any language, typos.
+- **Repeated lines** for the same card are added together. Lines that Scryfall can't find are listed in a warning.
+
+**Changing the note from the block**
+
+Two actions write into the block's text, so the note opens the same way next time:
+
+- **Choosing a view** sets the `view:` line.
+- **Choosing an edition:** in Images or Grid, hover a card and click its edition button (or right-click the card; long-press on mobile). The edition list is the same as in *Insert full card image*, and it says which editions exist in foil. The choice is written into the card's line as `(SET) 123`; quantity, name and markers are kept.
+
+If the block can't be located safely (for example inside a callout, or the note was edited meanwhile), the view changes only on screen, and a notice shows the line to change by hand.
+
+**Foils**
+
+Add Moxfield's markers to the end of a card line: `*F*` for foil, `*E*` for etched foil. Images and Grid show a moving foil sheen on the card (still when the system reduces motion); Text shows a `foil` or `etched` tag. The same card in foil and non-foil stays on two lines.
+
 ### Hover popup
 
 Hover over a link such as `[[Phyrexian Altar]]` (reading view or Live Preview) and the card image appears.
@@ -218,12 +271,13 @@ The short form needs an uppercase `B` (`[b3]` stays as text). Links and code are
 
 - Every request goes through Obsidian's `requestUrl` with `User-Agent: MtgCardPrimers/<version>` and `Accept: application/json`.
 - One request at a time, spaced per endpoint:
-  - 500 ms after `/cards/named` and `/cards/search`.
+  - 500 ms after `/cards/named`, `/cards/search` and `/cards/collection`.
   - 100 ms after all other endpoints.
   - An HTTP 429 pauses all requests for 30 s.
 - Results are cached in memory for the session. Failed requests are not cached, except "not found" answers.
 - The set list (`/sets`, for set symbols) is fetched at most once per session.
-- Only card lookups are sent to Scryfall: what you type in the search, the names of links you hover, card lines in `mtg-card` blocks, set codes and card ids. Note contents are never sent.
+- Decklists are fetched with `/cards/collection`: one request per 75 cards. Only lines it can't match exactly (typos, names in other languages) are looked up one by one.
+- Only card lookups are sent to Scryfall: what you type in the search, the names of links you hover, card lines in `mtg-card` and `mtg-deck` blocks, set codes and card ids. Note contents are never sent.
 
 ## Tests
 

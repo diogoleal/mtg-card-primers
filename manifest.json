@@ -1,7 +1,7 @@
 {
 	"id": "mtg-card-primers",
 	"name": "MTG Card Primers",
-	"version": "0.8.1",
+	"version": "0.9.5",
 	"minAppVersion": "1.5.7",
 	"description": "Write study primers for Magic: The Gathering cards with Scryfall data. Search names in any language, insert card text, art, images and set symbols, and show mana, loyalty and Commander bracket symbols and card hover previews.",
 	"author": "Diogo",
