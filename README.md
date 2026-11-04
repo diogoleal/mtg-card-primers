@@ -14,6 +14,7 @@ Keep your Magic: The Gathering knowledge in Obsidian. Write a study note ("prime
 **Decklists**
 - **`mtg-deck` block:** paste a list from Moxfield, Arena or MTGO and switch between a text list, stacks of cards or a grid of whole cards, with colour identity and mana curve.
 - **Your editions and foils:** pick the edition of each card and mark foils (`*F*`) and etched foils (`*E*`); the choice is saved in the note.
+- **Edit primers beside the deck:** click a card to open its primer in the side panel (created on the spot if it doesn't exist yet), with the deck still in view.
 
 ![A decklist shown as stacks of cards](https://raw.githubusercontent.com/diogoleal/mtg-card-primers/main/docs/images/deck-images.png)
 
@@ -185,9 +186,18 @@ Sideboard
 
 The block has three views, chosen with the **Text | Images | Grid** buttons in its header:
 
-- **Text:** cards in columns by type (Commander, Creatures, Instants…, Lands, Sideboard), sorted by mana value, with their mana cost. Names work like `[[links]]`: hover shows the card, click opens its primer.
+- **Text:** cards in columns by type (Commander, Creatures, Instants…, Lands, Sideboard), sorted by mana value, with their mana cost. Hovering a name shows the card.
 - **Images:** one stack per type; the cards overlap so only their name bars show. Hover a card to see it whole.
 - **Grid:** every card whole, one grid per type.
+
+**Opening primers from the deck**
+
+- **Click** a card (its name in Text, the card in Images or Grid): its primer opens in a tab in the right sidebar, so you can edit it and keep looking at the deck. The sidebar opens if it was closed.
+- **The panel is reused:** clicking another card shows that card's primer in the same tab. If you close the tab or move it out of the sidebar, the next click makes a new one.
+- **No primer yet?** It is created with the card's data (your folder and template), like *New card primer*.
+- **Ctrl/Cmd-click** opens the primer in a new tab instead.
+- Cards that Scryfall couldn't find behave like a plain `[[link]]`.
+- **Mobile:** the primer opens in the right drawer.
 
 The header shows the deck's colour identity and card count; the footer shows the mana curve (lands not counted).
 

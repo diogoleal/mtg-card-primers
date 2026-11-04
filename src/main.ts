@@ -1,4 +1,4 @@
-import { Editor, Notice, Plugin, TFile } from 'obsidian';
+import { Editor, Notice, Plugin, TFile, type WorkspaceLeaf } from 'obsidian';
 import { toCardInfo, type CardInfo, type ScryfallCard } from './card';
 import { renderCardBlock } from './codeblock';
 import { renderDeckBlock } from './deck';
@@ -15,6 +15,8 @@ import { DEFAULT_SETTINGS, MtgCardPrimersSettings, MtgCardPrimersSettingTab } fr
 export default class MtgCardPrimersPlugin extends Plugin {
 	settings!: MtgCardPrimersSettings;
 	scryfall!: ScryfallClient;
+	/** Side panel tab used for primers opened from a decklist; reused for the next card. */
+	private primerLeaf: WorkspaceLeaf | null = null;
 
 	async onload() {
 		await this.loadSettings();
@@ -152,6 +154,40 @@ export default class MtgCardPrimersPlugin extends Plugin {
 		const file = await createPrimer(this.app, this.settings, card);
 		new Notice(`Primer created: ${file.basename}`);
 		await this.openFile(file);
+	}
+
+	/**
+	 * Opens the card's primer, creating it (with this printing's data) when there is none yet.
+	 * 'panel': in a right sidebar tab, so the note it was opened from stays visible. 'tab': in a new tab.
+	 */
+	async openPrimer(card: ScryfallCard, where: 'panel' | 'tab'): Promise<void> {
+		try {
+			const info = toCardInfo(card);
+			let file = findPrimerByOracleId(this.app, info.oracleId);
+			if (!file) {
+				file = await createPrimer(this.app, this.settings, info);
+				new Notice(`Primer created: ${file.basename}`);
+			}
+			const leaf = where === 'tab' ? this.app.workspace.getLeaf('tab') : this.primerPanel();
+			if (!leaf) return;
+			await leaf.openFile(file);
+			const { workspace } = this.app;
+			if (where === 'panel' && workspace.rightSplit.collapsed) workspace.rightSplit.expand();
+			workspace.setActiveLeaf(leaf, { focus: true });
+		} catch (e) {
+			showError(e);
+		}
+	}
+
+	private primerPanel(): WorkspaceLeaf | null {
+		const { workspace } = this.app;
+		const leaf = this.primerLeaf;
+		// Still open, and still in the right sidebar (the user may have closed or dragged it).
+		if (leaf && leaf.getRoot() === workspace.rightSplit && workspace.getLeavesOfType('markdown').includes(leaf)) {
+			return leaf;
+		}
+		this.primerLeaf = workspace.getRightLeaf(false);
+		return this.primerLeaf;
 	}
 
 	private async resolveCard(query: CardQuery): Promise<CardInfo> {

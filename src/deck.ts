@@ -305,7 +305,7 @@ function renderImages(
 			const finish = c.entry.finish ? ` (${c.entry.finish})` : '';
 			const tile = stack.createDiv({
 				cls: c.entry.finish ? `mtg-deck-tile is-${c.entry.finish}` : 'mtg-deck-tile',
-				attr: { title: `${c.entry.quantity} ${c.name}${finish}` },
+				attr: { title: `${c.entry.quantity} ${c.name}${finish}\nClick: open primer in the side panel` },
 			});
 			if (c.entry.quantity > 1) tile.createSpan({ cls: 'mtg-deck-badge', text: `×${c.entry.quantity}` });
 			if (c.imageUrl) {
@@ -348,6 +348,7 @@ function cardLink(plugin: MtgCardPrimersPlugin, parent: HTMLElement, c: DeckCard
 	const resolved = plugin.app.metadataCache.getFirstLinkpathDest(target, sourcePath);
 	const link = parent.createEl('a', {
 		cls: resolved ? 'internal-link' : 'internal-link is-unresolved',
+		title: 'Open primer in the side panel',
 		href: target,
 		attr: { 'data-href': target, target: '_blank', rel: 'noopener' },
 	});
@@ -355,9 +356,16 @@ function cardLink(plugin: MtgCardPrimersPlugin, parent: HTMLElement, c: DeckCard
 	return link;
 }
 
+/** Click: the card's primer in the side panel, next to the deck. Ctrl/Cmd-click: in a new tab. */
 function openCard(plugin: MtgCardPrimersPlugin, c: DeckCard, sourcePath: string, e: MouseEvent): void {
 	e.preventDefault();
-	void plugin.app.workspace.openLinkText(frontFaceName(c.name), sourcePath, e.ctrlKey || e.metaKey);
+	const newTab = e.ctrlKey || e.metaKey;
+	if (!c.card) {
+		// Not on Scryfall: behave like a plain [[link]].
+		void plugin.app.workspace.openLinkText(frontFaceName(c.name), sourcePath, newTab);
+		return;
+	}
+	void plugin.openPrimer(c.card, newTab ? 'tab' : 'panel');
 }
 
 function renderCurve(root: HTMLElement, cards: DeckCard[]): void {
