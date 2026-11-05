@@ -10,6 +10,8 @@ export interface MtgCardPrimersSettings {
 	hoverPopup: boolean;
 	manaSymbols: boolean;
 	primerDecklist: boolean;
+	deckFolder: string;
+	deckTemplatePath: string;
 }
 
 export const DEFAULT_SETTINGS: MtgCardPrimersSettings = {
@@ -19,11 +21,17 @@ export const DEFAULT_SETTINGS: MtgCardPrimersSettings = {
 	hoverPopup: true,
 	manaSymbols: true,
 	primerDecklist: true,
+	deckFolder: 'MTG/Decks',
+	deckTemplatePath: '',
 };
 
 const TEMPLATE_DESC =
 	'Path of a note used as the initial body (e.g. Templates/Primer.md). ' +
-	'Supports {{name}}, {{front_name}}, {{oracle_id}} and {{decklist}}. Empty = default template.';
+	'Supports {{name}}, {{front_name}}, {{oracle_id}}, {{decklist}} and {{combo}}. Empty = default template.';
+const DECK_FOLDER_DESC = 'Where "New deck primer" creates its notes ("Grist Primer.md").';
+const DECK_TEMPLATE_DESC =
+	'Path of a note used as the body of new deck primers. Same placeholders as the card template; ' +
+	'{{decklist}} and {{combo}} start with the commander. Empty = default deck template.';
 const DECKLIST_DESC =
 	'Adds a Decklist section to the default template, with an mtg-deck block that starts with the card ' +
 	'(as commander when it can be one). Custom templates can use {{decklist}} instead.';
@@ -61,6 +69,16 @@ export class MtgCardPrimersSettingTab extends PluginSettingTab {
 				desc: DECKLIST_DESC,
 				aliases: ['mtg-deck', 'commander'],
 				control: { type: 'toggle', key: 'primerDecklist' },
+			},
+			{
+				name: 'Deck primers folder',
+				desc: DECK_FOLDER_DESC,
+				control: { type: 'folder', key: 'deckFolder', placeholder: DEFAULT_SETTINGS.deckFolder, includeRoot: true },
+			},
+			{
+				name: 'Deck primer template',
+				desc: DECK_TEMPLATE_DESC,
+				control: { type: 'file', key: 'deckTemplatePath', placeholder: 'Templates/deck primer.md', filter: (f) => f.extension === 'md' },
 			},
 			{
 				name: 'Reference printing',
@@ -132,6 +150,32 @@ export class MtgCardPrimersSettingTab extends PluginSettingTab {
 					this.plugin.settings.primerDecklist = value;
 					await this.plugin.saveSettings();
 				}),
+			);
+
+		new Setting(containerEl)
+			.setName('Deck primers folder')
+			.setDesc(DECK_FOLDER_DESC)
+			.addText((text) =>
+				text
+					.setPlaceholder(DEFAULT_SETTINGS.deckFolder)
+					.setValue(this.plugin.settings.deckFolder)
+					.onChange(async (value) => {
+						this.plugin.settings.deckFolder = value.trim();
+						await this.plugin.saveSettings();
+					}),
+			);
+
+		new Setting(containerEl)
+			.setName('Deck primer template')
+			.setDesc(DECK_TEMPLATE_DESC)
+			.addText((text) =>
+				text
+					.setPlaceholder('Templates/deck primer.md')
+					.setValue(this.plugin.settings.deckTemplatePath)
+					.onChange(async (value) => {
+						this.plugin.settings.deckTemplatePath = value.trim();
+						await this.plugin.saveSettings();
+					}),
 			);
 
 		new Setting(containerEl)

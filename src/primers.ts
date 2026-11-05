@@ -1,5 +1,6 @@
 import { App, normalizePath, stringifyYaml, TFile } from 'obsidian';
 import type { CardInfo } from './card';
+import { starterCombo } from './combo';
 import { primerDecklist } from './decklist';
 import { frontFaceName } from './moxfield';
 import { sanitizeFileName } from './sanitize';
@@ -14,9 +15,39 @@ export const DEFAULT_TEMPLATE = `\`\`\`mtg-card
 
 ## Synergies
 
+## Combos
+
+{{combo}}
+
 ## Pitfalls / interactions
 
 ## Decks I use it in
+`;
+
+/** Body of a new deck primer ("New deck primer"), unless the settings name a deck template. */
+export const DEFAULT_DECK_TEMPLATE = `> How the deck wins, in a few lines. Key pieces: …
+
+## Decklist
+
+{{decklist}}
+
+## How the deck wins
+
+## Combos
+
+{{combo}}
+
+## Tutors
+
+## Mulligan and opening hand
+
+## What shuts the deck down
+
+| Card | Effect |
+| --- | --- |
+|  |  |
+
+## Deck changes
 `;
 
 /** Added to the default template when "Decklist in new primers" is on. */
@@ -70,7 +101,12 @@ export function buildFrontmatter(card: CardInfo): string {
 
 async function loadTemplate(app: App, settings: MtgCardPrimersSettings): Promise<string> {
 	if (!settings.templatePath) return settings.primerDecklist ? DEFAULT_TEMPLATE + DECKLIST_SECTION : DEFAULT_TEMPLATE;
-	let path = normalizePath(settings.templatePath);
+	return readTemplate(app, settings.templatePath);
+}
+
+/** A template note's text, without its own frontmatter (the plugin writes its own). */
+async function readTemplate(app: App, templatePath: string): Promise<string> {
+	let path = normalizePath(templatePath);
 	if (!path.endsWith('.md')) path += '.md';
 	const file = app.vault.getFileByPath(path);
 	if (!file) throw new Error(`Template not found: ${path}`);
@@ -84,7 +120,8 @@ function fillTemplate(template: string, card: CardInfo): string {
 		.replace(/\{\{\s*name\s*\}\}/g, () => card.name)
 		.replace(/\{\{\s*front_name\s*\}\}/g, () => card.frontName)
 		.replace(/\{\{\s*oracle_id\s*\}\}/g, () => card.oracleId)
-		.replace(/\{\{\s*decklist\s*\}\}/g, () => primerDecklist(card));
+		.replace(/\{\{\s*decklist\s*\}\}/g, () => primerDecklist(card))
+		.replace(/\{\{\s*combo\s*\}\}/g, () => starterCombo(card));
 }
 
 async function ensureFolder(app: App, folder: string): Promise<void> {
@@ -97,8 +134,8 @@ async function ensureFolder(app: App, folder: string): Promise<void> {
 }
 
 /** First free path: "Name.md", then "Name (SET).md", then "Name (SET) 2.md"... */
-function freePath(app: App, folder: string, card: CardInfo): string {
-	const base = sanitizeFileName(card.frontName);
+function freePath(app: App, folder: string, card: CardInfo, suffix = ''): string {
+	const base = sanitizeFileName(card.frontName) + suffix;
 	const prefix = folder && folder !== '/' ? `${folder}/` : '';
 	const candidates = [base, `${base} (${card.set.toUpperCase()})`];
 	for (const c of candidates) {
@@ -117,4 +154,23 @@ export async function createPrimer(app: App, settings: MtgCardPrimersSettings, c
 	await ensureFolder(app, folder);
 	const path = freePath(app, folder, card);
 	return app.vault.create(path, buildFrontmatter(card) + '\n' + body);
+}
+
+/**
+ * A deck primer for a commander: "Grist Primer.md" in the decks folder, with the decklist and a combo
+ * block that start with the commander. Its frontmatter has no mtg_oracle_id, so it is never taken for
+ * the commander's card primer.
+ */
+export async function createDeckPrimer(app: App, settings: MtgCardPrimersSettings, card: CardInfo): Promise<TFile> {
+	const folder = normalizePath(settings.deckFolder || '/');
+	const template = settings.deckTemplatePath ? await readTemplate(app, settings.deckTemplatePath) : DEFAULT_DECK_TEMPLATE;
+	const body = fillTemplate(template, card);
+	await ensureFolder(app, folder);
+	const path = freePath(app, folder, card, ' Primer');
+	const data = {
+		mtg_commander: card.name,
+		mtg_color_identity: card.colorIdentity,
+		tags: ['mtg/deck-primer'],
+	};
+	return app.vault.create(path, `---\n${stringifyYaml(data)}---\n\n${body}`);
 }

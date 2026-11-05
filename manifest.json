@@ -1,9 +1,9 @@
 {
 	"id": "mtg-card-primers",
 	"name": "MTG Card Primers",
-	"version": "0.10.0",
+	"version": "0.11.0",
 	"minAppVersion": "1.5.7",
-	"description": "Write study primers for Magic: The Gathering cards and view decklists as text, card stacks or a grid. Scryfall data, names in any language, editions and foils, card hover previews, and mana, loyalty, set and bracket symbols.",
+	"description": "Write study primers for Magic: The Gathering cards and decks. View decklists as text, card stacks or a grid, and draw combos with each card in its zone. Scryfall data, card hover previews, and mana, loyalty and set symbols.",
 	"author": "Diogo",
 	"authorUrl": "https://github.com/diogoleal",
 	"isDesktopOnly": false

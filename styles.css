@@ -721,3 +721,599 @@ img.mtg-mana.mtg-mana-glyph {
 		background-position: 50% 50%;
 	}
 }
+
+/* ---------- mtg-combo ---------- */
+
+.mtg-combo {
+	--mtg-combo-w: 112px;
+	margin: var(--size-4-2) 0;
+	padding: var(--size-4-3);
+	border: 1px solid var(--background-modifier-border);
+	border-radius: var(--radius-l);
+	background: var(--background-secondary);
+}
+
+.mtg-combo-header {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: var(--size-4-2) var(--size-4-3);
+	margin-bottom: var(--size-4-3);
+}
+
+.mtg-combo-title {
+	font-size: var(--font-ui-large);
+	font-weight: var(--font-bold);
+}
+
+/* Keywords and results share one colour per family (tone). */
+.mtg-combo {
+	--mtg-tone: var(--interactive-accent);
+	--mtg-tone-rgb: var(--interactive-accent-rgb, 124, 58, 237);
+}
+
+.mtg-combo.is-win,
+.mtg-combo .is-win {
+	--mtg-tone: var(--color-yellow);
+	--mtg-tone-rgb: var(--color-yellow-rgb);
+}
+
+.mtg-combo.is-damage,
+.mtg-combo .is-damage {
+	--mtg-tone: var(--color-red);
+	--mtg-tone-rgb: var(--color-red-rgb);
+}
+
+.mtg-combo.is-mana,
+.mtg-combo .is-mana {
+	--mtg-tone: var(--color-blue);
+	--mtg-tone-rgb: var(--color-blue-rgb);
+}
+
+.mtg-combo.is-life,
+.mtg-combo .is-life {
+	--mtg-tone: var(--color-green);
+	--mtg-tone-rgb: var(--color-green-rgb);
+}
+
+.mtg-combo.is-death,
+.mtg-combo .is-death {
+	--mtg-tone: var(--color-purple);
+	--mtg-tone-rgb: var(--color-purple-rgb);
+}
+
+.mtg-combo.is-tokens,
+.mtg-combo .is-tokens {
+	--mtg-tone: var(--color-orange);
+	--mtg-tone-rgb: var(--color-orange-rgb);
+}
+
+.mtg-combo.is-cards,
+.mtg-combo .is-cards {
+	--mtg-tone: var(--color-cyan);
+	--mtg-tone-rgb: var(--color-cyan-rgb);
+}
+
+.mtg-combo:is(.is-win, .is-damage, .is-mana, .is-life, .is-death, .is-tokens, .is-cards, .is-other) {
+	border-top: 3px solid var(--mtg-tone);
+}
+
+.mtg-combo-keywords {
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--size-2-3);
+}
+
+.mtg-combo-keyword {
+	display: flex;
+	align-items: center;
+	gap: var(--size-2-2);
+	padding: var(--size-2-1) var(--size-4-2) var(--size-2-1) var(--size-2-3);
+	border: 1px solid var(--mtg-tone);
+	border-radius: 999px;
+	background: rgba(var(--mtg-tone-rgb), 0.15);
+	color: var(--text-normal);
+	font-size: var(--font-ui-smaller);
+	font-weight: var(--font-bold);
+	letter-spacing: 0.03em;
+	text-transform: uppercase;
+}
+
+.mtg-combo-keyword-icon {
+	display: flex;
+	color: var(--mtg-tone);
+}
+
+.mtg-combo-keyword-icon svg {
+	width: 14px;
+	height: 14px;
+}
+
+.mtg-combo-mat {
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--size-4-3);
+}
+
+.mtg-combo-main,
+.mtg-combo-side {
+	display: flex;
+	flex-direction: column;
+	gap: var(--size-4-3);
+	min-width: 0;
+}
+
+.mtg-combo-main {
+	flex: 3 1 320px;
+}
+
+.mtg-combo-side {
+	--mtg-combo-w: 96px;
+	flex: 1 1 130px;
+}
+
+.mtg-combo-zone {
+	padding: var(--size-4-2) var(--size-4-3) var(--size-4-3);
+	border: 1px dashed var(--background-modifier-border-hover);
+	border-radius: var(--radius-m);
+	background: var(--background-primary);
+}
+
+.mtg-combo-zone.is-battlefield {
+	flex-grow: 1;
+}
+
+.mtg-combo-zone-title {
+	display: flex;
+	align-items: center;
+	gap: var(--size-2-3);
+	margin-bottom: var(--size-4-2);
+	color: var(--text-muted);
+	font-size: var(--font-ui-smaller);
+	font-weight: var(--font-semibold);
+	letter-spacing: 0.05em;
+	text-transform: uppercase;
+}
+
+.mtg-combo-zone-icon {
+	display: flex;
+}
+
+.mtg-combo-zone-icon svg {
+	width: 14px;
+	height: 14px;
+}
+
+.mtg-combo-row {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: var(--size-4-2);
+}
+
+.mtg-combo-step {
+	display: flex;
+	align-items: center;
+	gap: var(--size-4-2);
+}
+
+.mtg-combo-row + .mtg-combo-row {
+	margin-top: var(--size-4-3);
+}
+
+/* Operators between cards */
+.mtg-combo-link {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	flex: none;
+	width: 26px;
+	height: 26px;
+	border-radius: 50%;
+	background: var(--interactive-accent);
+	color: var(--text-on-accent);
+	font-size: 18px;
+	font-weight: var(--font-bold);
+	line-height: 1;
+	box-shadow: var(--shadow-s);
+}
+
+.mtg-combo-link.is-minus {
+	background: var(--color-red);
+	color: #fff;
+}
+
+.mtg-combo-link.is-stack {
+	background: var(--color-orange);
+	color: #fff;
+}
+
+/* "A or B": any one of them */
+.mtg-combo-choice {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: var(--size-2-3);
+	padding: var(--size-2-3);
+	border: 1px dashed var(--interactive-accent);
+	border-radius: var(--radius-m);
+}
+
+.mtg-combo-choice .mtg-combo-card {
+	--mtg-combo-w: 88px;
+}
+
+.mtg-combo-or {
+	color: var(--text-muted);
+	font-size: var(--font-ui-smaller);
+	font-style: italic;
+}
+
+/* Cards */
+.mtg-combo-card {
+	position: relative;
+	flex: none;
+	width: var(--mtg-combo-w);
+	aspect-ratio: 488 / 680;
+	cursor: pointer;
+	transition: transform 120ms ease;
+}
+
+.mtg-combo-card:hover {
+	z-index: 1;
+	transform: translateY(-3px);
+}
+
+.mtg-combo-face {
+	width: 100%;
+	height: 100%;
+	border-radius: 4.75% / 3.5%;
+	box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+	overflow: hidden;
+}
+
+.mtg-combo-face img {
+	display: block;
+	width: 100%;
+	height: 100%;
+}
+
+/* Tapped: the card lies on its side, so the slot is wider than tall. */
+.mtg-combo-card.is-tapped {
+	width: calc(var(--mtg-combo-w) * 680 / 488);
+	aspect-ratio: 680 / 488;
+}
+
+.mtg-combo-card.is-tapped .mtg-combo-face {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	width: var(--mtg-combo-w);
+	height: auto;
+	aspect-ratio: 488 / 680;
+	transform: translate(-50%, -50%) rotate(90deg);
+}
+
+.mtg-combo-card.is-on-stack .mtg-combo-face {
+	transform: rotate(-4deg);
+	box-shadow:
+		0 0 0 2px var(--color-orange),
+		0 6px 14px rgba(0, 0, 0, 0.45);
+}
+
+.mtg-combo-card.is-removed .mtg-combo-face {
+	box-shadow: 0 0 0 2px var(--color-red);
+	filter: grayscale(0.85) brightness(0.75);
+}
+
+.mtg-combo-badges {
+	position: absolute;
+	z-index: 1;
+	top: -8px;
+	right: -8px;
+	display: flex;
+	gap: 3px;
+}
+
+.mtg-combo-badge {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 24px;
+	height: 24px;
+	border-radius: 50%;
+	background: var(--background-primary);
+	box-shadow: var(--shadow-s);
+}
+
+.mtg-combo-badge svg {
+	width: 14px;
+	height: 14px;
+}
+
+.mtg-combo-badge.is-removed {
+	background: var(--color-red);
+	color: #fff;
+}
+
+.mtg-combo-badge.is-on-stack {
+	background: var(--color-orange);
+	color: #fff;
+}
+
+.mtg-combo-badge.is-tapped .mtg-mana {
+	margin: 0;
+}
+
+/* Results */
+.mtg-combo-results {
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--size-4-2);
+	margin-top: var(--size-4-3);
+}
+
+.mtg-combo-result {
+	display: flex;
+	align-items: center;
+	gap: var(--size-2-3);
+	padding: var(--size-2-2) var(--size-4-3);
+	border-radius: var(--radius-xl, 999px);
+	background: var(--background-modifier-hover);
+	font-size: var(--font-ui-small);
+	font-weight: var(--font-semibold);
+}
+
+.mtg-combo-result-icon {
+	display: flex;
+	color: var(--mtg-tone);
+}
+
+.mtg-combo-result-icon svg {
+	width: 16px;
+	height: 16px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.mtg-combo-card {
+		transition: none;
+	}
+}
+
+/* How it works, steps and notes (Markdown) */
+.mtg-combo-section {
+	--mtg-section: var(--interactive-accent);
+	margin-top: var(--size-4-3);
+	padding: var(--size-4-2) var(--size-4-3);
+	border-left: 3px solid var(--mtg-section);
+	border-radius: var(--radius-s);
+	background: var(--background-primary);
+}
+
+.mtg-combo-weak {
+	--mtg-section: var(--color-orange);
+}
+
+.mtg-combo-section > summary {
+	display: flex;
+	align-items: center;
+	gap: var(--size-2-3);
+	cursor: pointer;
+	color: var(--text-muted);
+	font-size: var(--font-ui-smaller);
+	font-weight: var(--font-semibold);
+	letter-spacing: 0.05em;
+	text-transform: uppercase;
+	list-style: none;
+}
+
+.mtg-combo-section > summary::-webkit-details-marker {
+	display: none;
+}
+
+.mtg-combo-section[open] > summary {
+	margin-bottom: var(--size-4-2);
+}
+
+.mtg-combo-section-icon {
+	display: flex;
+	color: var(--mtg-section);
+}
+
+.mtg-combo-section-icon svg {
+	width: 14px;
+	height: 14px;
+}
+
+.mtg-combo-steps + .mtg-combo-explanation {
+	margin-top: var(--size-4-2);
+}
+
+.mtg-combo-steps > :first-child,
+.mtg-combo-explanation > :first-child,
+.mtg-combo-notes > :first-child {
+	margin-top: 0;
+}
+
+.mtg-combo-steps > :last-child,
+.mtg-combo-explanation > :last-child,
+.mtg-combo-notes > :last-child {
+	margin-bottom: 0;
+}
+
+.mtg-combo-notes {
+	margin-top: var(--size-4-3);
+	color: var(--text-muted);
+	font-size: var(--font-ui-small);
+}
+
+/* Targets (`>`) */
+.mtg-combo-link.is-target {
+	background: var(--color-yellow);
+	color: var(--background-primary);
+}
+
+.mtg-combo-target {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: var(--size-2-2);
+	min-width: 84px;
+	max-width: 120px;
+	padding: var(--size-4-2) var(--size-4-2);
+	border: 2px solid var(--color-yellow);
+	border-radius: var(--radius-m);
+	background: rgba(var(--color-yellow-rgb), 0.12);
+	font-size: var(--font-ui-smaller);
+	font-weight: var(--font-semibold);
+	line-height: 1.25;
+	text-align: center;
+}
+
+.mtg-combo-target.is-you {
+	border-color: var(--color-green);
+	background: rgba(var(--color-green-rgb), 0.12);
+}
+
+.mtg-combo-target.is-opponent,
+.mtg-combo-target.is-each-opponent {
+	border-color: var(--color-red);
+	background: rgba(var(--color-red-rgb), 0.12);
+}
+
+.mtg-combo-target-icon {
+	display: flex;
+}
+
+.mtg-combo-target-icon svg {
+	width: 24px;
+	height: 24px;
+}
+
+.mtg-combo-target-card {
+	position: relative;
+	display: flex;
+	align-items: center;
+	gap: var(--size-2-3);
+}
+
+.mtg-combo-target-card .mtg-combo-card {
+	--mtg-combo-w: 96px;
+}
+
+.mtg-combo-target-card .mtg-combo-face {
+	outline: 2px solid var(--color-yellow);
+	outline-offset: 2px;
+}
+
+.mtg-combo-target-mark {
+	position: absolute;
+	z-index: 2;
+	bottom: -8px;
+	left: -8px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 24px;
+	height: 24px;
+	border-radius: 50%;
+	background: var(--color-yellow);
+	color: var(--background-primary);
+}
+
+.mtg-combo-target-mark svg {
+	width: 14px;
+	height: 14px;
+}
+
+/* Tokens ("[Zombie 2/2]") */
+.mtg-combo-card.is-token .mtg-combo-face {
+	box-shadow:
+		0 0 0 2px var(--background-modifier-border-hover),
+		0 2px 6px rgba(0, 0, 0, 0.35);
+}
+
+/* Several tokens: a second one peeking out behind. */
+.mtg-combo-card.has-copies {
+	box-shadow: none;
+}
+
+.mtg-combo-card.has-copies::before {
+	content: '';
+	position: absolute;
+	inset: 0;
+	z-index: -1;
+	transform: translate(5px, 5px);
+	border-radius: 4.75% / 3.5%;
+	background: var(--background-modifier-border-hover);
+}
+
+.mtg-combo-card .mtg-deck-badge {
+	top: auto;
+	right: -6px;
+	bottom: 8%;
+}
+
+/* Token Scryfall doesn't have: drawn with the token's colour. */
+.mtg-combo-token-drawn {
+	--mtg-token: #a7a39b;
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	padding: 8% 7%;
+	border: 3px solid var(--mtg-token);
+	border-radius: 4.75% / 3.5%;
+	background:
+		radial-gradient(circle at 50% 42%, rgba(255, 255, 255, 0.35), transparent 62%),
+		var(--mtg-token);
+	color: #1b1b1b;
+	text-align: center;
+}
+
+.mtg-combo-token-drawn.is-w {
+	--mtg-token: #f3eedb;
+}
+
+.mtg-combo-token-drawn.is-u {
+	--mtg-token: #8fc1e6;
+}
+
+.mtg-combo-token-drawn.is-b {
+	--mtg-token: #8d8590;
+}
+
+.mtg-combo-token-drawn.is-r {
+	--mtg-token: #ec9a7a;
+}
+
+.mtg-combo-token-drawn.is-g {
+	--mtg-token: #93c493;
+}
+
+.mtg-combo-token-drawn.is-m {
+	--mtg-token: #e3cb7d;
+}
+
+.mtg-combo-token-kind {
+	font-size: 0.65em;
+	font-weight: var(--font-bold);
+	letter-spacing: 0.12em;
+	text-transform: uppercase;
+	opacity: 0.7;
+}
+
+.mtg-combo-token-name {
+	margin: auto 0;
+	font-size: 0.95em;
+	font-weight: var(--font-bold);
+	line-height: 1.2;
+}
+
+.mtg-combo-token-pt {
+	align-self: flex-end;
+	padding: 0 6px;
+	border-radius: var(--radius-s);
+	background: rgba(255, 255, 255, 0.75);
+	font-weight: var(--font-bold);
+}

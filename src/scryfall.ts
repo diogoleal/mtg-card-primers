@@ -62,6 +62,7 @@ export class ScryfallClient {
 	private setsByCode: Promise<Map<string, SetInfo>> | null = null;
 	private icons = new Map<string, Promise<string>>();
 	private deckCards = new Map<string, Promise<ScryfallCard | null>>();
+	private tokens = new Map<string, Promise<ScryfallCard | null>>();
 	private readonly headers: Record<string, string>;
 
 	constructor(version: string) {
@@ -176,6 +177,36 @@ export class ScryfallClient {
 	 * Every printing of an oracle card, newest first (first page only: up to 175 prints).
 	 * Includes promos and digital prints, so the user can pick any edition.
 	 */
+	/**
+	 * A token printing by English name, with power/toughness and colours when given
+	 * ("Zombie", 2/2, black). Newest art without rules text first; null when Scryfall has no such token.
+	 */
+	token(spec: { name: string; power?: string; toughness?: string; colors: string[] }): Promise<ScryfallCard | null> {
+		const parts = [`t:token`, `!"${spec.name.replace(/"/g, '')}"`];
+		if (spec.power && /^\d+$/.test(spec.power)) parts.push(`pow=${spec.power}`);
+		if (spec.toughness && /^\d+$/.test(spec.toughness)) parts.push(`tou=${spec.toughness}`);
+		if (spec.colors.length) parts.push(`c=${spec.colors.join('').toLowerCase()}`);
+		const q = parts.join(' ');
+		let found = this.tokens.get(q);
+		if (!found) {
+			found = this.get<ScryfallList<ScryfallCard>>(
+				'/cards/search',
+				{ q, order: 'released', dir: 'desc', unique: 'art', include_extras: 'true' },
+				DELAY_SLOW,
+			).then(
+				// "[Insect 1/1 BG]" means the plain Insect (Grist's), not one with flying: prefer no rules text.
+				(list) => list.data.find((c) => !(c.oracle_text ?? c.card_faces?.[0]?.oracle_text)) ?? list.data[0] ?? null,
+				(e) => {
+					if (e instanceof ScryfallError && e.status === 404) return null;
+					throw e;
+				},
+			);
+			this.tokens.set(q, found);
+			found.catch(() => this.tokens.delete(q)); // retry next render (e.g. back online)
+		}
+		return found;
+	}
+
 	async prints(oracleId: string): Promise<ScryfallCard[]> {
 		try {
 			const list = await this.get<ScryfallList<ScryfallCard>>(

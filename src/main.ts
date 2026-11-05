@@ -1,6 +1,7 @@
 import { Editor, Notice, Plugin, TFile, type WorkspaceLeaf } from 'obsidian';
 import { toCardInfo, type CardInfo, type ScryfallCard } from './card';
 import { renderCardBlock } from './codeblock';
+import { renderComboBlock } from './combo-view';
 import { renderDeckBlock } from './deck';
 import { CardHoverPopup } from './hover';
 import { cardImageMarkdown, cardTextMarkdown, setSymbolToken } from './insert';
@@ -9,7 +10,7 @@ import { removeRarityGradients } from './svg';
 import { manaLivePreview } from './mana-editor';
 import { CardSuggestModal, confirm, PrintSuggestModal } from './modal';
 import type { CardQuery } from './moxfield';
-import { createPrimer, findPrimerByOracleId } from './primers';
+import { createDeckPrimer, createPrimer, findPrimerByOracleId } from './primers';
 import { ScryfallClient } from './scryfall';
 import { DEFAULT_SETTINGS, MtgCardPrimersSettings, MtgCardPrimersSettingTab } from './settings';
 
@@ -27,6 +28,18 @@ export default class MtgCardPrimersPlugin extends Plugin {
 			id: 'new-card-primer',
 			name: 'New card primer',
 			callback: () => this.pickCard('New card: name or Moxfield line', (q) => this.openOrCreate(q, false)),
+		});
+
+		this.addCommand({
+			id: 'new-deck-primer',
+			name: 'New deck primer',
+			callback: () =>
+				this.pickCard('Commander: name or Moxfield line', async (q) => {
+					const card = await this.resolveCard(q);
+					const file = await createDeckPrimer(this.app, this.settings, card);
+					new Notice(`Deck primer created: ${file.basename}`);
+					await this.openFile(file);
+				}),
 		});
 
 		this.addCommand({
@@ -83,6 +96,9 @@ export default class MtgCardPrimersPlugin extends Plugin {
 		);
 		this.registerMarkdownCodeBlockProcessor('mtg-deck', (source, el, ctx) =>
 			renderDeckBlock(this, source, el, ctx),
+		);
+		this.registerMarkdownCodeBlockProcessor('mtg-combo', (source, el, ctx) =>
+			renderComboBlock(this, source, el, ctx),
 		);
 
 		new CardHoverPopup(this).register();
