@@ -90,7 +90,8 @@ export default class MtgCardPrimersPlugin extends Plugin {
 			(code) => this.scryfall.setInfo(code),
 			(url) => this.scryfall.setIconSvg(url),
 		);
-		this.register(() => removeRarityGradients(document));
+		// Gradients are added to each window that shows a set symbol, so they are removed from all of them.
+		this.register(() => this.windowDocuments().forEach(removeRarityGradients));
 
 		this.registerMarkdownCodeBlockProcessor('mtg-card', (source, el, ctx) =>
 			renderCardBlock(this, source, el, ctx),
@@ -230,7 +231,14 @@ export default class MtgCardPrimersPlugin extends Plugin {
 		return card;
 	}
 
-	private async openFile(file: TFile) {
+	/** The main window's document and each open popout window's. */
+	windowDocuments(): Document[] {
+		const docs = new Set<Document>([this.app.workspace.containerEl.ownerDocument]);
+		this.app.workspace.iterateAllLeaves((leaf) => docs.add(leaf.view.containerEl.ownerDocument));
+		return [...docs];
+	}
+
+		private async openFile(file: TFile) {
 		await this.app.workspace.getLeaf(false).openFile(file);
 	}
 }

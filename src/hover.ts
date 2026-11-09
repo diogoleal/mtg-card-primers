@@ -35,8 +35,8 @@ export class CardHoverPopup {
 	constructor(private plugin: MtgCardPrimersPlugin) {}
 
 	register(): void {
-		this.attach(document);
-		// Popout windows have their own document.
+		// Popout windows have their own document: the ones already open, then each new one.
+		for (const doc of this.plugin.windowDocuments()) this.attach(doc);
 		this.plugin.registerEvent(this.plugin.app.workspace.on('window-open', (win) => this.attach(win.doc)));
 		this.plugin.register(() => this.hide());
 	}
