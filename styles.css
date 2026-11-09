@@ -1317,3 +1317,340 @@ img.mtg-mana.mtg-mana-glyph {
 	background: rgba(255, 255, 255, 0.75);
 	font-weight: var(--font-bold);
 }
+
+/* mtg-sideboard / mtg-changes: what comes out of the deck and what goes in */
+.mtg-swap {
+	--mtg-swap-w: 96px;
+	--mtg-swap-out: var(--color-red);
+	--mtg-swap-out-rgb: var(--color-red-rgb);
+	--mtg-swap-in: var(--color-green);
+	--mtg-swap-in-rgb: var(--color-green-rgb);
+	display: flex;
+	flex-direction: column;
+	gap: var(--size-4-3);
+	margin: var(--size-4-2) 0;
+	padding: var(--size-4-3);
+	border: 1px solid var(--background-modifier-border);
+	border-radius: var(--radius-l);
+	background: var(--background-secondary);
+}
+
+.mtg-swap-header {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: var(--size-4-2) var(--size-4-3);
+}
+
+.mtg-swap-title {
+	display: flex;
+	align-items: center;
+	gap: var(--size-2-3);
+	font-size: var(--font-ui-large);
+	font-weight: var(--font-bold);
+}
+
+.mtg-swap-title-icon {
+	display: flex;
+	color: var(--text-muted);
+}
+
+.mtg-swap-header .mtg-deck-toggle {
+	margin-left: auto;
+}
+
+.mtg-swap-totals {
+	display: flex;
+	align-items: center;
+	gap: var(--size-2-2);
+	font-size: var(--font-ui-smaller);
+	font-weight: var(--font-bold);
+}
+
+.mtg-swap-total {
+	padding: 0 var(--size-4-2);
+	border-radius: 999px;
+	line-height: 1.6;
+}
+
+.mtg-swap-total.is-out {
+	background: rgba(var(--mtg-swap-out-rgb), 0.15);
+	color: var(--mtg-swap-out);
+}
+
+.mtg-swap-total.is-in {
+	background: rgba(var(--mtg-swap-in-rgb), 0.15);
+	color: var(--mtg-swap-in);
+}
+
+.mtg-swap-balance {
+	padding: 0 var(--size-4-2);
+	border: 1px solid var(--color-orange);
+	border-radius: 999px;
+	color: var(--color-orange);
+	font-weight: var(--font-semibold);
+	line-height: 1.5;
+}
+
+.mtg-swap-empty-hint {
+	color: var(--text-muted);
+	font-size: var(--font-ui-small);
+}
+
+.mtg-swap-body {
+	display: flex;
+	flex-direction: column;
+	gap: var(--size-4-4);
+}
+
+.mtg-swap-group-title {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: var(--size-2-3) var(--size-4-3);
+	margin-bottom: var(--size-4-2);
+	padding-bottom: var(--size-2-3);
+	border-bottom: 1px solid var(--background-modifier-border);
+	font-weight: var(--font-semibold);
+}
+
+/* Out | arrow | In, the arrows lined up from one change to the next. */
+.mtg-swap-grid {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+	align-items: center;
+	gap: var(--size-4-2) var(--size-4-3);
+}
+
+.mtg-swap-side-title {
+	display: flex;
+	align-items: center;
+	gap: var(--size-2-2);
+	font-size: var(--font-ui-smaller);
+	font-weight: var(--font-semibold);
+	letter-spacing: 0.05em;
+	text-transform: uppercase;
+}
+
+.mtg-swap-side-title.is-out {
+	justify-content: flex-end;
+	color: var(--mtg-swap-out);
+}
+
+.mtg-swap-side-title.is-in {
+	color: var(--mtg-swap-in);
+}
+
+.mtg-swap-side-icon {
+	display: flex;
+}
+
+.mtg-swap-side-icon svg {
+	width: 14px;
+	height: 14px;
+}
+
+.mtg-swap-side {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: var(--size-4-2);
+	min-width: 0;
+}
+
+/* The cards that leave sit next to the arrow, like the ones that come in. */
+.mtg-swap-side.is-out {
+	justify-content: flex-end;
+}
+
+.mtg-swap-arrow {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 32px;
+	height: 32px;
+	border-radius: 50%;
+	background: var(--background-primary);
+	box-shadow: var(--shadow-s);
+	color: var(--text-normal);
+}
+
+.mtg-swap-arrow svg {
+	width: 18px;
+	height: 18px;
+}
+
+.mtg-swap-nothing {
+	padding: 0 var(--size-4-2);
+	color: var(--text-faint);
+}
+
+.mtg-swap-note {
+	grid-column: 1 / -1;
+	margin: calc(var(--size-4-1) * -1) 0 var(--size-4-1);
+	text-align: center;
+	color: var(--text-muted);
+	font-size: var(--font-ui-small);
+}
+
+.mtg-swap-note > *,
+.mtg-swap-notes > :first-child {
+	margin-top: 0;
+}
+
+.mtg-swap-note > *,
+.mtg-swap-notes > :last-child {
+	margin-bottom: 0;
+}
+
+.mtg-swap-notes {
+	margin-top: var(--size-4-3);
+	color: var(--text-muted);
+	font-size: var(--font-ui-small);
+}
+
+/* Images */
+.mtg-swap-card {
+	position: relative;
+	flex: none;
+	width: var(--mtg-swap-w);
+	aspect-ratio: 488 / 680;
+	cursor: pointer;
+	transition: transform 120ms ease;
+}
+
+.mtg-swap-card:hover {
+	z-index: 1;
+	transform: translateY(-3px);
+}
+
+.mtg-swap-face {
+	width: 100%;
+	height: 100%;
+	border-radius: 4.75% / 3.5%;
+	overflow: hidden;
+}
+
+.mtg-swap-face img {
+	display: block;
+	width: 100%;
+	height: 100%;
+}
+
+.mtg-swap-card.is-out .mtg-swap-face {
+	box-shadow: 0 0 0 2px var(--mtg-swap-out), 0 2px 6px rgba(0, 0, 0, 0.35);
+	filter: grayscale(0.6) brightness(0.85);
+}
+
+.mtg-swap-card.is-out:hover .mtg-swap-face {
+	filter: none;
+}
+
+.mtg-swap-card.is-in .mtg-swap-face {
+	box-shadow: 0 0 0 2px var(--mtg-swap-in), 0 2px 6px rgba(0, 0, 0, 0.35);
+}
+
+/* Several copies: a second card peeks out behind. */
+.mtg-swap-card.has-copies::before {
+	content: '';
+	position: absolute;
+	inset: 0;
+	border-radius: 4.75% / 3.5%;
+	background: var(--background-modifier-border-hover);
+	transform: translate(4px, -4px);
+	z-index: -1;
+}
+
+.mtg-swap-card .mtg-swap-qty {
+	position: absolute;
+	z-index: 1;
+	top: 1.5%;
+	right: -6px;
+	padding: 0 5px;
+	border-radius: var(--radius-s);
+	color: #fff;
+	font-size: var(--font-ui-smaller);
+	line-height: 1.5;
+	box-shadow: var(--shadow-s);
+}
+
+.mtg-swap-qty {
+	font-weight: var(--font-bold);
+	font-variant-numeric: tabular-nums;
+}
+
+.mtg-swap-card .mtg-swap-qty.is-out {
+	background: var(--mtg-swap-out);
+}
+
+.mtg-swap-card .mtg-swap-qty.is-in {
+	background: var(--mtg-swap-in);
+}
+
+/* Text */
+.mtg-swap.is-text .mtg-swap-side {
+	flex-direction: column;
+	flex-wrap: nowrap;
+	align-items: stretch;
+	gap: var(--size-2-1);
+}
+
+.mtg-swap.is-text .mtg-swap-arrow {
+	width: 24px;
+	height: 24px;
+}
+
+.mtg-swap.is-text .mtg-swap-arrow svg {
+	width: 14px;
+	height: 14px;
+}
+
+.mtg-swap-line {
+	display: flex;
+	align-items: baseline;
+	gap: var(--size-2-3);
+	min-width: 0;
+}
+
+.mtg-swap-side.is-out .mtg-swap-line {
+	justify-content: flex-end;
+	text-align: right;
+}
+
+.mtg-swap-line .mtg-swap-qty.is-out {
+	color: var(--mtg-swap-out);
+}
+
+.mtg-swap-line .mtg-swap-qty.is-in {
+	color: var(--mtg-swap-in);
+}
+
+.mtg-swap-name {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.mtg-swap-line.is-missing .mtg-swap-name {
+	color: var(--text-faint);
+}
+
+.mtg-swap-cost {
+	flex: none;
+}
+
+.mtg-swap.is-text .mtg-swap-nothing {
+	text-align: center;
+}
+
+@media (max-width: 480px) {
+	.mtg-swap {
+		--mtg-swap-w: 76px;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.mtg-swap-card {
+		transition: none;
+	}
+}

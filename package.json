@@ -1,7 +1,7 @@
 {
 	"name": "mtg-card-primers",
-	"version": "0.11.0",
-	"description": "Write study primers for Magic: The Gathering cards and decks. View decklists as text, card stacks or a grid, and draw combos with each card in its zone. Scryfall data, card hover previews, and mana, loyalty and set symbols.",
+	"version": "0.12.0",
+	"description": "Write study primers for Magic: The Gathering cards and decks. View decklists as text, card stacks or a grid, log sideboard plans and deck changes, and draw combos with each card in its zone. Scryfall data, hover previews and mana symbols.",
 	"main": "main.js",
 	"type": "module",
 	"scripts": {

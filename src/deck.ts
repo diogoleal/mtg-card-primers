@@ -177,13 +177,15 @@ export async function renderDeckBlock(
  * Obsidian then re-renders the block. Skipped when the block can't be located safely
  * (e.g. inside a callout, or the note was edited after the block was drawn).
  */
-async function editBlock(
+export async function editBlock(
 	plugin: MtgCardPrimersPlugin,
 	source: string,
 	el: HTMLElement,
 	ctx: MarkdownPostProcessorContext,
 	change: (source: string) => string,
+	languages: string[] = ['mtg-deck'],
 ): Promise<boolean> {
+	const opening = new RegExp(`^\\s*(\`\`\`|~~~)\\s*(?:${languages.join('|')})\\b`);
 	const info = ctx.getSectionInfo(el);
 	const file = plugin.app.vault.getFileByPath(ctx.sourcePath);
 	if (!info || !file) return false;
@@ -194,7 +196,7 @@ async function editBlock(
 			const lines = data.split('\n');
 			const fence = lines[info.lineStart] ?? '';
 			const inner = lines.slice(info.lineStart + 1, info.lineEnd);
-			if (!/^\s*(```|~~~)\s*mtg-deck\b/.test(fence) || normalize(inner.join('\n')) !== normalize(source)) {
+			if (!opening.test(fence) || normalize(inner.join('\n')) !== normalize(source)) {
 				return data;
 			}
 			const updated = change(inner.join('\n')).split('\n');
@@ -203,7 +205,7 @@ async function editBlock(
 			return lines.join('\n');
 		});
 	} catch (e) {
-		console.warn('[mtg-card-primers] could not update the decklist block', e);
+		console.warn('[mtg-card-primers] could not update the block', e);
 		return false;
 	}
 	return done;

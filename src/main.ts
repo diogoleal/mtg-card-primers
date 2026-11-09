@@ -12,6 +12,7 @@ import { CardSuggestModal, confirm, PrintSuggestModal } from './modal';
 import type { CardQuery } from './moxfield';
 import { createDeckPrimer, createPrimer, findPrimerByOracleId } from './primers';
 import { ScryfallClient } from './scryfall';
+import { renderSwapBlock, SWAP_BLOCKS } from './swap-view';
 import { DEFAULT_SETTINGS, MtgCardPrimersSettings, MtgCardPrimersSettingTab } from './settings';
 
 export default class MtgCardPrimersPlugin extends Plugin {
@@ -100,6 +101,11 @@ export default class MtgCardPrimersPlugin extends Plugin {
 		this.registerMarkdownCodeBlockProcessor('mtg-combo', (source, el, ctx) =>
 			renderComboBlock(this, source, el, ctx),
 		);
+		for (const language of Object.keys(SWAP_BLOCKS)) {
+			this.registerMarkdownCodeBlockProcessor(language, (source, el, ctx) =>
+				renderSwapBlock(this, language, source, el, ctx),
+			);
+		}
 
 		new CardHoverPopup(this).register();
 

@@ -48,6 +48,10 @@ export const DEFAULT_DECK_TEMPLATE = `> How the deck wins, in a few lines. Key p
 |  |  |
 
 ## Deck changes
+
+\`\`\`mtg-changes
+// Out -> In — why
+\`\`\`
 `;
 
 /** Added to the default template when "Decklist in new primers" is on. */
