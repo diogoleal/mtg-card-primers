@@ -1654,3 +1654,239 @@ img.mtg-mana.mtg-mana-glyph {
 		transition: none;
 	}
 }
+
+/* ---------- mtg-hand: an opening hand, keep or mulligan ---------- */
+
+.mtg-hand {
+	--mtg-hand-tone: var(--text-muted);
+	--mtg-hand-tone-rgb: var(--mono-rgb-100);
+	display: flex;
+	flex-direction: column;
+	gap: var(--size-4-3);
+	margin: var(--size-4-2) 0;
+	padding: var(--size-4-3);
+	border: 1px solid var(--background-modifier-border);
+	border-top: 3px solid var(--background-modifier-border);
+	border-radius: var(--radius-l);
+	background: var(--background-secondary);
+}
+
+.mtg-hand.is-keep {
+	--mtg-hand-tone: var(--color-green);
+	--mtg-hand-tone-rgb: var(--color-green-rgb);
+	border-top-color: var(--color-green);
+}
+
+.mtg-hand.is-mulligan {
+	--mtg-hand-tone: var(--color-red);
+	--mtg-hand-tone-rgb: var(--color-red-rgb);
+	border-top-color: var(--color-red);
+}
+
+.mtg-hand-header {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: var(--size-4-2) var(--size-4-3);
+}
+
+.mtg-hand-title {
+	display: flex;
+	align-items: center;
+	gap: var(--size-2-3);
+	font-size: var(--font-ui-large);
+	font-weight: var(--font-bold);
+}
+
+.mtg-hand-title-icon {
+	display: flex;
+	color: var(--text-muted);
+}
+
+.mtg-hand-verdict {
+	display: inline-flex;
+	align-items: center;
+	gap: var(--size-2-2);
+	padding: 1px var(--size-4-2) 1px var(--size-2-3);
+	border-radius: 999px;
+	background: rgba(var(--mtg-hand-tone-rgb), 0.15);
+	color: var(--mtg-hand-tone);
+	font-size: var(--font-ui-small);
+	font-weight: var(--font-bold);
+	text-transform: uppercase;
+	letter-spacing: 0.04em;
+}
+
+.mtg-hand-verdict-icon {
+	display: flex;
+}
+
+.mtg-hand-verdict-icon svg {
+	width: 15px;
+	height: 15px;
+}
+
+.mtg-hand-chip {
+	padding: 0 var(--size-4-2);
+	border: 1px solid var(--background-modifier-border-hover);
+	border-radius: 999px;
+	color: var(--text-muted);
+	font-size: var(--font-ui-smaller);
+	line-height: 1.6;
+}
+
+.mtg-hand-stats {
+	color: var(--text-muted);
+	font-size: var(--font-ui-small);
+	font-variant-numeric: tabular-nums;
+}
+
+.mtg-hand-header .mtg-deck-toggle {
+	margin-left: auto;
+}
+
+.mtg-hand-empty-hint {
+	color: var(--text-muted);
+	font-size: var(--font-ui-small);
+}
+
+.mtg-hand-body {
+	container-type: inline-size;
+}
+
+/* The fan: cards overlap and turn a little, like a hand held in front of you. */
+.mtg-hand-fan {
+	--mtg-hand-w: min(130px, calc(100cqw / (var(--mtg-hand-n) * 0.72 + 1.5)));
+	display: flex;
+	justify-content: center;
+	padding: var(--size-4-3) 0 calc(var(--size-4-6) + var(--size-4-3));
+}
+
+.mtg-hand-card {
+	position: relative;
+	flex: none;
+	width: var(--mtg-hand-w);
+	aspect-ratio: 488 / 680;
+	margin: 0 calc(var(--mtg-hand-w) * -0.14);
+	transform: translateY(var(--mtg-hand-drop)) rotate(var(--mtg-hand-angle));
+	transform-origin: 50% 120%;
+	cursor: pointer;
+	transition: transform 140ms ease;
+}
+
+.mtg-hand-card:hover {
+	z-index: 1;
+	transform: translateY(calc(var(--mtg-hand-drop) - 12px)) rotate(var(--mtg-hand-angle)) scale(1.06);
+}
+
+.mtg-hand-face {
+	width: 100%;
+	height: 100%;
+	border-radius: 4.75% / 3.5%;
+	overflow: hidden;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+.mtg-hand-face img {
+	display: block;
+	width: 100%;
+	height: 100%;
+}
+
+/* A hand to send back looks it: faded, until you hover a card. */
+.mtg-hand.is-mulligan .mtg-hand-face {
+	filter: grayscale(0.55) brightness(0.88);
+}
+
+.mtg-hand.is-mulligan .mtg-hand-card:hover .mtg-hand-face {
+	filter: none;
+}
+
+.mtg-hand-card-notes,
+.mtg-hand-why-text {
+	color: var(--text-muted);
+	font-size: var(--font-ui-small);
+}
+
+.mtg-hand-card-notes > :first-child,
+.mtg-hand-why-text > :first-child {
+	margin-top: 0;
+}
+
+.mtg-hand-card-notes > :last-child,
+.mtg-hand-why-text > :last-child {
+	margin-bottom: 0;
+}
+
+.mtg-hand-why {
+	padding: var(--size-4-2) var(--size-4-3);
+	border-left: 3px solid var(--mtg-hand-tone);
+	border-radius: var(--radius-s);
+	background: rgba(var(--mtg-hand-tone-rgb), 0.07);
+}
+
+.mtg-hand-why-title {
+	margin-bottom: var(--size-2-2);
+	color: var(--mtg-hand-tone);
+	font-size: var(--font-ui-smaller);
+	font-weight: var(--font-bold);
+	text-transform: uppercase;
+	letter-spacing: 0.04em;
+}
+
+.mtg-hand-why-text {
+	color: var(--text-normal);
+}
+
+/* Text */
+.mtg-hand-columns {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+	gap: var(--size-4-3) var(--size-4-6);
+}
+
+.mtg-hand-line {
+	display: flex;
+	align-items: baseline;
+	gap: var(--size-2-3);
+	min-width: 0;
+}
+
+.mtg-hand-qty {
+	flex: none;
+	min-width: 1.2em;
+	color: var(--text-muted);
+	font-variant-numeric: tabular-nums;
+	text-align: right;
+}
+
+.mtg-hand-name {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.mtg-hand-line.is-missing .mtg-hand-name {
+	color: var(--text-faint);
+}
+
+.mtg-hand-cost {
+	flex: none;
+	margin-left: auto;
+}
+
+.mtg-hand-line-note {
+	margin: 0 0 var(--size-2-2) calc(1.2em + var(--size-2-3));
+	color: var(--text-muted);
+	font-size: var(--font-ui-smaller);
+}
+
+.mtg-hand-line-note > * {
+	margin: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.mtg-hand-card {
+		transition: none;
+	}
+}

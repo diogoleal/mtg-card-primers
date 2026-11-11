@@ -41,6 +41,11 @@ export const DEFAULT_DECK_TEMPLATE = `> How the deck wins, in a few lines. Key p
 
 ## Mulligan and opening hand
 
+\`\`\`mtg-hand
+keep
+// The seven cards, one per line, then why: and the reason
+\`\`\`
+
 ## What shuts the deck down
 
 | Card | Effect |

@@ -223,11 +223,15 @@ function renderTextCard(parent: HTMLElement, c: SwapCard, side: Side, context: C
 	if (cost) appendManaText(line.createSpan({ cls: 'mtg-swap-cost' }), cost.split(' // ')[0] ?? '');
 }
 
-/** Click: the card's primer in the side panel. Ctrl/Cmd-click: in a new tab. */
 function open(e: MouseEvent, c: SwapCard, card: ScryfallCard | null, context: Context): void {
+	openCard(e, context.plugin, c.query, card, context.sourcePath);
+}
+
+/** Click: the card's primer in the side panel. Ctrl/Cmd-click: in a new tab. */
+export function openCard(e: MouseEvent, plugin: MtgCardPrimersPlugin, query: CardQuery, card: ScryfallCard | null, sourcePath: string): void {
 	e.preventDefault();
 	e.stopPropagation(); // Live Preview: don't move the cursor into the block
 	const newTab = e.ctrlKey || e.metaKey;
-	if (card) void context.plugin.openPrimer(card, newTab ? 'tab' : 'panel');
-	else void context.plugin.app.workspace.openLinkText(frontFaceName(c.query.name), context.sourcePath, newTab);
+	if (card) void plugin.openPrimer(card, newTab ? 'tab' : 'panel');
+	else void plugin.app.workspace.openLinkText(frontFaceName(query.name), sourcePath, newTab);
 }

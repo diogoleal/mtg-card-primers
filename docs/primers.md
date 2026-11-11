@@ -95,7 +95,7 @@ Turn off **Decklist in new primers** in the settings to leave it out. In a custo
 
 **New deck primer** asks for a commander and creates `MTG/Decks/<Commander> Primer.md`. Its frontmatter names the commander (`mtg_commander`, `mtg_color_identity`, tag `mtg/deck-primer`) but has no `mtg_oracle_id`, so it never replaces the commander's card primer.
 
-The default deck template has: a summary quote, Decklist (the commander under `Commander`, an empty `Deck` to paste the 99 into), How the deck wins, Combos (a starting `mtg-combo` block), Tutors, Mulligan and opening hand, What shuts the deck down (a table to fill), and Deck changes (an empty [`mtg-changes`](sideboard.md) block). Set your own in **Deck primer template**; it takes the same placeholders as the card template.
+The default deck template has: a summary quote, Decklist (the commander under `Commander`, an empty `Deck` to paste the 99 into), How the deck wins, Combos (a starting `mtg-combo` block), Tutors, Mulligan and opening hand (a starting [`mtg-hand`](hands.md) block), What shuts the deck down (a table to fill), and Deck changes (an empty [`mtg-changes`](sideboard.md) block). Set your own in **Deck primer template**; it takes the same placeholders as the card template.
 
 ## `mtg-card` block
 

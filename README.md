@@ -22,7 +22,7 @@ Run **New card primer**, pick a card, and you get a note made from your template
 
 ### 🏰 Deck primers
 
-**New deck primer** asks for a commander and creates a note ready to fill in: the decklist, how the deck wins, combos, tutors, mulligans, what shuts it down and a log of the changes you make.
+**New deck primer** asks for a commander and creates a note ready to fill in: the decklist, how the deck wins, combos, tutors, the opening hands to keep or mulligan, what shuts it down and a log of the changes you make.
 
 ### 🃏 Decklists
 
@@ -35,6 +35,14 @@ Paste a list from Moxfield, Arena or MTGO into an `mtg-deck` block and see it as
 Write `Fabled Passage -> Verdant Catacombs` in an `mtg-sideboard` or `mtg-changes` block and see what comes out of the deck and what goes in, with an arrow between the cards, the totals and the reason for each change. Group the changes by matchup, or keep a dated log of your deck.
 
 ![A sideboard guide: the cards that come out, an arrow, and the cards that go in](https://raw.githubusercontent.com/diogoleal/mtg-card-primers/main/docs/images/sideboard.png)
+
+### ✋ Opening hands
+
+List seven cards in an `mtg-hand` block, write `keep` or `mulligan` and why, and see the hand fanned out with a green Keep or red Mulligan badge and its count of lands and spells. Show which hands your deck keeps and which it sends back.
+
+| Keep | Mulligan |
+|---|---|
+| ![A hand to keep, with a green Keep badge](https://raw.githubusercontent.com/diogoleal/mtg-card-primers/main/docs/images/hand-keep.png) | ![A hand to mulligan, faded, with a red Mulligan badge](https://raw.githubusercontent.com/diogoleal/mtg-card-primers/main/docs/images/hand-mulligan.png) |
 
 ### ♾️ Combos
 
@@ -57,6 +65,7 @@ Insert a card's text, its art, the full card image of any edition, or its set sy
 > [primers and commands](docs/primers.md) ·
 > [decklists](docs/decklists.md) ·
 > [sideboard and deck changes](docs/sideboard.md) ·
+> [opening hands](docs/hands.md) ·
 > [combos](docs/combos.md) ·
 > [symbols and hover previews](docs/symbols.md).
 
