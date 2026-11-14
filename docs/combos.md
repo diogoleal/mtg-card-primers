@@ -2,6 +2,8 @@
 
 The `mtg-combo` block draws a combo the way it sits on the table: each card as an image, in the zone where it has to be, joined by the operators that say what happens to it. Above the cards go the combo's name and keywords; below them, the results, an explanation and its weak points.
 
+![A combo with each card in its zone](images/combo.png)
+
 ````markdown
 ```mtg-combo
 title: Gravecrawler loop

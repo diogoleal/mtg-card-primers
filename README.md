@@ -54,9 +54,13 @@ Own one Blackblade Reforged for three decks? List the card and the decks that sh
 
 The `mtg-combo` block draws a combo the way it sits on the table: each card in its zone (battlefield, graveyard, stack…), with sacrificed and tapped cards marked, targets and tokens. Add the result, how it works and its weak points, in Markdown.
 
+![A combo with each card in its zone: sacrificed cards marked, a target, results and how it works](https://raw.githubusercontent.com/diogoleal/mtg-card-primers/main/docs/images/combo.png)
+
 ### 🔮 Symbols
 
 Write `{1}{B}`, `{T}`, `[+1]`, `{set:dsc:m}` or `[BRACKET 3]` in any note and they turn into mana symbols, loyalty shields, set symbols and Commander bracket badges.
+
+![What you write and the symbols you see: mana, loyalty, level, set symbols and Commander brackets](https://raw.githubusercontent.com/diogoleal/mtg-card-primers/main/docs/images/symbols.png)
 
 ### 👁️ Hover previews
 

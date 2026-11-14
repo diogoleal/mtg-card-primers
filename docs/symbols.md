@@ -2,6 +2,8 @@
 
 Mana, loyalty, level, set and bracket symbols in any note, and card previews when you hover a link.
 
+![What you write and the symbols you see](images/symbols.png)
+
 ## Cheat sheet
 
 | Write | Shows |
