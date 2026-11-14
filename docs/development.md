@@ -36,7 +36,7 @@ For development, `npm run dev` rebuilds on every change. You can pair it with th
 - The set list (`/sets`, for set symbols) is fetched at most once per session.
 - Decklists are fetched with `/cards/collection`: one request per 75 cards. Only lines it can't match exactly (typos, names in other languages) are looked up one by one.
 - Tokens in `mtg-combo` blocks are looked up with `/cards/search` (`t:token`, name, power/toughness, colours), once per token per session.
-- Only card lookups are sent to Scryfall: what you type in the search, the names of links you hover, card and token names in `mtg-card`, `mtg-deck`, `mtg-combo`, `mtg-hand`, `mtg-sideboard` and `mtg-changes` blocks, set codes and card ids. Note contents are never sent.
+- Only card lookups are sent to Scryfall: what you type in the search, the names of links you hover, card and token names in `mtg-card`, `mtg-deck`, `mtg-combo`, `mtg-hand`, `mtg-shared`, `mtg-sideboard` and `mtg-changes` blocks, set codes and card ids. Note contents are never sent.
 
 ## Tests
 
@@ -51,6 +51,7 @@ Unit tests (`node:test`, no dependencies) cover:
 - the `mtg-combo` parser (zones, operators, targets, tokens, fields)
 - the `mtg-sideboard` / `mtg-changes` parser (arrows, quantities, lists, groups, reasons)
 - the `mtg-hand` parser (cards, keep or mulligan, play or draw, notes)
+- the `mtg-shared` parser (cards, decks, where the card is, moving it)
 - matching card names in other languages
 - file name sanitization
 - link path cleanup

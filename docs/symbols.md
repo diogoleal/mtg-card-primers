@@ -17,6 +17,7 @@ Mana, loyalty, level, set and bracket symbols in any note, and card previews whe
 | ` ```mtg-combo ` with zones and cards | combo with card images, operators, targets and tokens |
 | ` ```mtg-sideboard ` / ` ```mtg-changes ` with `Out -> In` lines | what comes out of the deck and what goes in |
 | ` ```mtg-hand ` with seven cards and `keep` or `mulligan` | an opening hand, fanned out, with the decision |
+| ` ```mtg-shared ` with a card and `- [x]` / `- [ ]` decks | a card shared by several decks, and where it is now |
 
 ## Hover popup
 

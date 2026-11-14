@@ -1890,3 +1890,231 @@ img.mtg-mana.mtg-mana-glyph {
 		transition: none;
 	}
 }
+
+/* ---------- mtg-shared: one copy, several decks ---------- */
+
+.mtg-shared {
+	display: flex;
+	flex-direction: column;
+	gap: var(--size-4-3);
+	margin: var(--size-4-2) 0;
+	padding: var(--size-4-3);
+	border: 1px solid var(--background-modifier-border);
+	border-radius: var(--radius-l);
+	background: var(--background-secondary);
+}
+
+.mtg-shared-header {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: var(--size-4-2) var(--size-4-3);
+}
+
+.mtg-shared-title {
+	display: flex;
+	align-items: center;
+	gap: var(--size-2-3);
+	font-size: var(--font-ui-large);
+	font-weight: var(--font-bold);
+}
+
+.mtg-shared-title-icon {
+	display: flex;
+	color: var(--text-muted);
+}
+
+.mtg-shared-stats,
+.mtg-shared-empty-hint {
+	color: var(--text-muted);
+	font-size: var(--font-ui-small);
+}
+
+.mtg-shared-body {
+	display: flex;
+	flex-direction: column;
+	gap: var(--size-4-4);
+}
+
+.mtg-shared-card {
+	display: flex;
+	align-items: flex-start;
+	gap: var(--size-4-4);
+}
+
+.mtg-shared-card + .mtg-shared-card {
+	padding-top: var(--size-4-4);
+	border-top: 1px solid var(--background-modifier-border);
+}
+
+.mtg-shared-image {
+	flex: none;
+	width: 150px;
+	aspect-ratio: 488 / 680;
+	border-radius: 4.75% / 3.5%;
+	overflow: hidden;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+	cursor: pointer;
+}
+
+.mtg-shared-image img,
+.mtg-shared-art img {
+	display: block;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+
+.mtg-shared-info {
+	display: flex;
+	flex: 1;
+	flex-direction: column;
+	gap: var(--size-4-2);
+	min-width: 0;
+}
+
+.mtg-shared-name {
+	font-size: var(--font-ui-medium);
+	font-weight: var(--font-bold);
+}
+
+.mtg-shared-facts {
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--size-2-3);
+}
+
+.mtg-shared-chip {
+	padding: 0 var(--size-4-2);
+	border: 1px solid var(--background-modifier-border-hover);
+	border-radius: 999px;
+	color: var(--text-muted);
+	font-size: var(--font-ui-smaller);
+	line-height: 1.6;
+}
+
+.mtg-shared-chip.is-here {
+	border-color: transparent;
+	background: rgba(var(--color-green-rgb), 0.15);
+	color: var(--color-green);
+	font-weight: var(--font-semibold);
+}
+
+.mtg-shared-chip.is-warning {
+	border-color: var(--color-orange);
+	color: var(--color-orange);
+	font-weight: var(--font-semibold);
+}
+
+.mtg-shared-note {
+	color: var(--text-muted);
+	font-size: var(--font-ui-small);
+}
+
+.mtg-shared-note > * {
+	margin: 0;
+}
+
+/* Each deck: its commander's art, its name and the button that moves the card there. */
+.mtg-shared-decks {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+	gap: var(--size-4-3);
+	margin-top: var(--size-4-1);
+}
+
+.mtg-shared-deck {
+	display: flex;
+	flex-direction: column;
+	gap: var(--size-2-3);
+	min-width: 0;
+	padding: var(--size-2-3);
+	border: 1px solid var(--background-modifier-border);
+	border-radius: var(--radius-m);
+	background: var(--background-primary);
+	opacity: 0.72;
+	transition: opacity 120ms ease;
+}
+
+.mtg-shared-deck:hover {
+	opacity: 1;
+}
+
+.mtg-shared-deck.is-here {
+	border-color: var(--color-green);
+	box-shadow: 0 0 0 1px var(--color-green);
+	opacity: 1;
+}
+
+.mtg-shared-art {
+	position: relative;
+	aspect-ratio: 626 / 457;
+	border-radius: var(--radius-s);
+	overflow: hidden;
+	background: var(--background-modifier-hover);
+	cursor: pointer;
+}
+
+.mtg-shared-art .mtg-deck-placeholder {
+	height: 100%;
+}
+
+.mtg-shared-here-badge {
+	position: absolute;
+	top: 6px;
+	right: 6px;
+	display: flex;
+	padding: 3px;
+	border-radius: 50%;
+	background: var(--color-green);
+	color: #fff;
+	box-shadow: var(--shadow-s);
+}
+
+.mtg-shared-here-badge svg {
+	width: 14px;
+	height: 14px;
+	stroke-width: 3;
+}
+
+.mtg-shared-deck-name {
+	overflow: hidden;
+	font-size: var(--font-ui-small);
+	font-weight: var(--font-semibold);
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.mtg-shared-move {
+	height: auto;
+	padding: 2px var(--size-4-2);
+	font-size: var(--font-ui-smaller);
+}
+
+.mtg-shared-deck.is-here .mtg-shared-move {
+	background: rgba(var(--color-green-rgb), 0.15);
+	color: var(--color-green);
+	box-shadow: none;
+}
+
+.mtg-shared-move:disabled {
+	cursor: default;
+	opacity: 1;
+}
+
+@media (max-width: 480px) {
+	.mtg-shared-card {
+		flex-direction: column;
+		align-items: stretch;
+	}
+
+	.mtg-shared-image {
+		width: 120px;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.mtg-shared-deck {
+		transition: none;
+	}
+}

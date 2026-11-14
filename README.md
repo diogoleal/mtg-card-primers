@@ -44,6 +44,12 @@ List seven cards in an `mtg-hand` block, write `keep` or `mulligan` and why, and
 |---|---|
 | ![A hand to keep, with a green Keep badge](https://raw.githubusercontent.com/diogoleal/mtg-card-primers/main/docs/images/hand-keep.png) | ![A hand to mulligan, faded, with a red Mulligan badge](https://raw.githubusercontent.com/diogoleal/mtg-card-primers/main/docs/images/hand-mulligan.png) |
 
+### 🔗 Shared cards
+
+Own one Blackblade Reforged for three decks? List the card and the decks that share it in an `mtg-shared` block, and mark the deck that has it now. Each deck shows its commander's art, and **Move here** updates the note when the card changes decks.
+
+![Blackblade Reforged shared by three decks, with Arahbo holding it](https://raw.githubusercontent.com/diogoleal/mtg-card-primers/main/docs/images/shared.png)
+
 ### ♾️ Combos
 
 The `mtg-combo` block draws a combo the way it sits on the table: each card in its zone (battlefield, graveyard, stack…), with sacrificed and tapped cards marked, targets and tokens. Add the result, how it works and its weak points, in Markdown.
@@ -66,6 +72,7 @@ Insert a card's text, its art, the full card image of any edition, or its set sy
 > [decklists](docs/decklists.md) ·
 > [sideboard and deck changes](docs/sideboard.md) ·
 > [opening hands](docs/hands.md) ·
+> [shared cards](docs/shared.md) ·
 > [combos](docs/combos.md) ·
 > [symbols and hover previews](docs/symbols.md).
 
