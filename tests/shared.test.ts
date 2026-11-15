@@ -59,3 +59,14 @@ test('with more copies, a deck is toggled on its own', () => {
 test('moving an inline card turns its decks into a list', () => {
 	assert.equal(moveSharedCard('Blackblade Reforged -> Arahbo; Whiplash — equip', 0, 1), 'Blackblade Reforged — equip\n- [ ] Arahbo\n- [x] Whiplash');
 });
+
+test('view: compact is read and written, and is not taken for a card', async () => {
+	const { setSharedView } = await import('../src/shared.ts');
+	const source = `title: Mine\nview: compacto\n${BLADE}`;
+	const shared = parseShared(source);
+	assert.equal(shared.view, 'compact');
+	assert.equal(shared.cards.length, 1);
+	assert.equal(setSharedView(source, 'cards').split('\n')[1], 'view: cards');
+	assert.equal(setSharedView(BLADE, 'compact').split('\n')[0], 'view: compact');
+	assert.equal(parseShared(setSharedView(BLADE, 'compact')).cards[0]!.decks.length, 3);
+});

@@ -46,9 +46,11 @@ List seven cards in an `mtg-hand` block, write `keep` or `mulligan` and why, and
 
 ### 🔗 Shared cards
 
-Own one Blackblade Reforged for three decks? List the card and the decks that share it in an `mtg-shared` block, and mark the deck that has it now. Each deck shows its commander's art, and **Move here** updates the note when the card changes decks.
+Own one Blackblade Reforged for three decks? List the card and the decks that share it in an `mtg-shared` block, and mark the deck that has it now. Each deck shows its commander's art, and **Move here** updates the note when the card changes decks. Switch to the **Compact** view to see every shared card on one line, with a pill per deck.
 
-![Blackblade Reforged shared by three decks, with Arahbo holding it](https://raw.githubusercontent.com/diogoleal/mtg-card-primers/main/docs/images/shared.png)
+| Cards | Compact |
+|---|---|
+| ![Blackblade Reforged shared by three decks, with Arahbo holding it](https://raw.githubusercontent.com/diogoleal/mtg-card-primers/main/docs/images/shared.png) | ![The compact view: one line per card and a pill per deck](https://raw.githubusercontent.com/diogoleal/mtg-card-primers/main/docs/images/shared-compact.png) |
 
 ### ♾️ Combos
 

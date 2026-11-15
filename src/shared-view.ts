@@ -4,7 +4,7 @@ import { editBlock } from './deck';
 import type MtgCardPrimersPlugin from './main';
 import { replaceManaInElement } from './mana';
 import type { CardQuery } from './moxfield';
-import { moveSharedCard, parseShared, type SharedCard, type SharedDeck } from './shared';
+import { moveSharedCard, parseShared, setSharedView, type SharedCard, type SharedDeck, type SharedView } from './shared';
 import { openCard } from './swap-view';
 
 interface Context {
@@ -46,6 +46,13 @@ export async function renderSharedBlock(
 	}
 	if (shared.cards.length > 1) header.createSpan({ cls: 'mtg-shared-stats', text: `${shared.cards.length} cards` });
 
+	let view: SharedView = shared.view ?? 'cards';
+	const toggle = header.createDiv({ cls: 'mtg-deck-toggle', attr: { role: 'group', 'aria-label': 'View' } });
+	const buttons: Record<SharedView, HTMLButtonElement> = {
+		cards: toggle.createEl('button', { text: 'Cards' }),
+		compact: toggle.createEl('button', { text: 'Compact' }),
+	};
+
 	// The card and each deck's commander, looked up together.
 	const decks = shared.cards.flatMap((c) => c.decks.map((d) => ({ deck: d, ...deckTarget(plugin.app, d, ctx.sourcePath) })));
 	const lookups: { key: object; query: CardQuery }[] = [
@@ -82,7 +89,30 @@ export async function renderSharedBlock(
 	};
 
 	const body = root.createDiv({ cls: 'mtg-shared-body' });
-	for (const [i, card] of shared.cards.entries()) await renderCard(body, card, i, context, notes);
+	const show = async (next: SharedView) => {
+		view = next;
+		for (const [key, button] of Object.entries(buttons)) {
+			button.toggleClass('is-active', key === view);
+			button.setAttr('aria-pressed', String(key === view));
+		}
+		root.toggleClass('is-compact', view === 'compact');
+		body.empty();
+		for (const [i, card] of shared.cards.entries()) {
+			if (view === 'compact') renderLine(body, card, i, context, notes);
+			else await renderCard(body, card, i, context, notes);
+		}
+	};
+	for (const key of Object.keys(buttons) as SharedView[]) {
+		keepFocus(buttons[key]);
+		buttons[key].addEventListener('click', (e) => {
+			e.preventDefault();
+			e.stopPropagation(); // Live Preview: don't move the cursor into the block
+			if (key === view) return;
+			void show(key);
+			void editBlock(plugin, source, el, ctx, (src) => setSharedView(src, key), ['mtg-shared']);
+		});
+	}
+	await show(view);
 
 	const missing = shared.cards.filter((c) => !context.found.get(c));
 	if (missing.length) {
@@ -108,19 +138,7 @@ async function renderCard(
 	const info = row.createDiv({ cls: 'mtg-shared-info' });
 	info.createDiv({ cls: 'mtg-shared-name', text: name });
 
-	const facts = info.createDiv({ cls: 'mtg-shared-facts' });
-	const copies = shared.copies;
-	const decks = shared.decks.length;
-	facts.createSpan({ cls: 'mtg-shared-chip', text: `${copies} ${copies === 1 ? 'copy' : 'copies'} · ${decks} ${decks === 1 ? 'deck' : 'decks'}` });
-	const holding = shared.decks.filter((d) => d.here);
-	if (holding.length > copies) {
-		const warn = facts.createSpan({ cls: 'mtg-shared-chip is-warning', text: `In ${holding.length} decks at once` });
-		warn.setAttr('title', `You own ${copies} ${copies === 1 ? 'copy' : 'copies'}: take it out of ${holding.length - copies} of them.`);
-	} else if (holding.length) {
-		facts.createSpan({ cls: 'mtg-shared-chip is-here', text: `Now in ${holding.map((d) => d.name).join(', ')}` });
-	} else if (decks) {
-		facts.createSpan({ cls: 'mtg-shared-chip is-free', text: 'Not in a deck' });
-	}
+	renderFacts(info.createDiv({ cls: 'mtg-shared-facts' }), shared);
 	if (shared.note) await context.markdown(info, 'mtg-shared-note', shared.note);
 
 	const grid = info.createDiv({ cls: 'mtg-shared-decks' });
@@ -160,12 +178,81 @@ function renderDeck(
 	const single = shared.copies <= 1;
 	const label = deck.here ? (single ? 'Here' : 'Here · remove') : single ? 'Move here' : 'Add here';
 	const button = tile.createEl('button', { cls: 'mtg-shared-move', text: label });
-	if (deck.here && single) button.disabled = true;
+	moveButton(button, shared, cardIndex, deck, deckIndex, context);
+}
+
+/** One line per card: a small image, its name and where it is, and a pill per deck. */
+function renderLine(body: HTMLElement, shared: SharedCard, index: number, context: Context, notes: Map<SharedDeck, TFile | null>): void {
+	const card = context.found.get(shared) ?? null;
+	const name = card?.name ?? shared.card.query.name;
+	const row = body.createDiv({ cls: 'mtg-shared-line' });
+
+	const thumb = row.createDiv({ cls: 'mtg-shared-thumb', attr: { title: `${name}\nClick: open primer in the side panel` } });
+	appendImage(thumb, card, 'art_crop', name);
+	thumb.addEventListener('click', (e) => openCard(e, context.plugin, shared.card.query, card, context.ctx.sourcePath));
+
+	const info = row.createDiv({ cls: 'mtg-shared-line-info' });
+	const title = info.createDiv({ cls: 'mtg-shared-line-title' });
+	const link = title.createEl('a', { cls: 'mtg-shared-line-name', text: name, href: '#', attr: { title: 'Open primer in the side panel' } });
+	link.addEventListener('click', (e) => openCard(e, context.plugin, shared.card.query, card, context.ctx.sourcePath));
+	renderFacts(title, shared, true);
+	if (shared.note) info.setAttr('title', shared.note);
+
+	const pills = info.createDiv({ cls: 'mtg-shared-pills' });
+	shared.decks.forEach((deck, deckIndex) => {
+		const commander = context.found.get(deck) ?? null;
+		const pill = pills.createEl('button', { cls: deck.here ? 'mtg-shared-pill is-here' : 'mtg-shared-pill' });
+		const avatar = pill.createSpan({ cls: 'mtg-shared-avatar' });
+		appendImage(avatar, commander, 'art_crop', '');
+		pill.createSpan({ cls: 'mtg-shared-pill-name', text: deck.name });
+		if (deck.here) setIcon(pill.createSpan({ cls: 'mtg-shared-pill-check' }), 'check');
+		const single = shared.copies <= 1;
+		const note = notes.get(deck);
+		pill.setAttr(
+			'title',
+			deck.here
+				? `${name} is in ${deck.name}${single ? '' : '\nClick: take it out'}`
+				: `${single ? 'Move' : 'Add'} ${name} to ${deck.name}${note ? `\n(${note.basename})` : ''}`,
+		);
+		moveButton(pill, shared, index, deck, deckIndex, context);
+	});
+}
+
+/** Copies and decks, and where the card is (in the compact view the pills already show it). */
+function renderFacts(facts: HTMLElement, shared: SharedCard, compact = false): void {
+	const copies = shared.copies;
+	const decks = shared.decks.length;
+	facts.createSpan({ cls: 'mtg-shared-chip', text: `${copies} ${copies === 1 ? 'copy' : 'copies'} · ${decks} ${decks === 1 ? 'deck' : 'decks'}` });
+	const holding = shared.decks.filter((d) => d.here);
+	if (holding.length > copies) {
+		const warn = facts.createSpan({ cls: 'mtg-shared-chip is-warning', text: `In ${holding.length} decks at once` });
+		warn.setAttr('title', `You own ${copies} ${copies === 1 ? 'copy' : 'copies'}: take it out of ${holding.length - copies} of them.`);
+	} else if (compact) {
+		if (!holding.length && decks) facts.createSpan({ cls: 'mtg-shared-chip is-free', text: 'Not in a deck' });
+	} else if (holding.length) {
+		facts.createSpan({ cls: 'mtg-shared-chip is-here', text: `Now in ${holding.map((d) => d.name).join(', ')}` });
+	} else if (decks) {
+		facts.createSpan({ cls: 'mtg-shared-chip is-free', text: 'Not in a deck' });
+	}
+}
+
+/** Moves the card to the deck on click: one copy moves, more copies switch that deck on or off. */
+function moveButton(button: HTMLButtonElement, shared: SharedCard, cardIndex: number, deck: SharedDeck, deckIndex: number, context: Context): void {
+	if (deck.here && shared.copies <= 1) button.disabled = true;
+	keepFocus(button);
 	button.addEventListener('click', (e) => {
 		e.preventDefault();
 		e.stopPropagation(); // Live Preview: don't move the cursor into the block
 		button.disabled = true;
 		context.move(cardIndex, deckIndex);
+	});
+}
+
+/** Live Preview: a press on the button must not take the focus or put the cursor in the note. */
+function keepFocus(button: HTMLElement): void {
+	button.addEventListener('mousedown', (e) => {
+		e.preventDefault();
+		e.stopPropagation();
 	});
 }
 

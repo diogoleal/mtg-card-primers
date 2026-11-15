@@ -9,7 +9,7 @@
  * - [ ] Nine-Fingers Keene
  * ```
  */
-import { parseSwapCard, type SwapCard } from './swap.ts';
+import { parseSwapCard, setSwapView, type SwapCard } from './swap.ts';
 
 export interface SharedDeck {
 	/** The deck as written: a commander's name, a [[note]] or any name. */
@@ -33,12 +33,17 @@ export interface SharedCard {
 	note?: string;
 }
 
+/** Full tiles with each commander's art, or one line per card. */
+export type SharedView = 'cards' | 'compact';
+
 export interface Shared {
 	title?: string;
+	view?: SharedView;
 	cards: SharedCard[];
 }
 
 const TITLE = /^(title|t[ií]tulo)\s*:\s*(.*)$/i;
+const VIEW = /^(?:view|vista|visualiza[cç][aã]o)\s*:\s*(.*)$/i;
 // "- Deck", "* Deck", "+ Deck", "1. Deck", with an optional "[ ]" / "[x]".
 const DECK = /^(?:[-*+•]|\d+[.)])\s+(?:\[([ xX✓])\]\s*)?(.*)$/;
 // "Blackblade Reforged -> Arahbo; Whiplash; Nine-Fingers Keene"
@@ -57,6 +62,14 @@ export function parseShared(source: string): Shared {
 		const title = TITLE.exec(line);
 		if (title) {
 			result.title = title[2]!.trim() || undefined;
+			return;
+		}
+
+		const view = VIEW.exec(line);
+		if (view) {
+			const value = view[1]!.trim().toLowerCase();
+			if (/^(compact|compacto|compacta|list|lista|line|lines)$/.test(value)) result.view = 'compact';
+			else if (/^(cards?|cartas?|images?|imagens?|full|grid)$/.test(value)) result.view = 'cards';
 			return;
 		}
 
@@ -155,4 +168,9 @@ export function moveSharedCard(source: string, cardIndex: number, deckIndex: num
 function deckText(deck: SharedDeck): string {
 	if (!deck.link) return deck.name;
 	return deck.link === deck.name ? `[[${deck.link}]]` : `[[${deck.link}|${deck.name}]]`;
+}
+
+/** The block's source with "view: …" set (added at the top, after a leading title). */
+export function setSharedView(source: string, view: SharedView): string {
+	return setSwapView(source, view);
 }

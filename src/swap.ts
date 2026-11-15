@@ -198,7 +198,7 @@ export function count(cards: SwapCard[]): number {
 }
 
 /** The block's source with "view: …" set: replaces the line, or adds it at the top. */
-export function setSwapView(source: string, view: SwapView): string {
+export function setSwapView(source: string, view: string): string {
 	const lines = source.split('\n');
 	const i = lines.findIndex((l) => /^\s*view\s*:/i.test(l));
 	if (i >= 0) {

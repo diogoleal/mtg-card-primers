@@ -28,8 +28,15 @@ Each deck is shown with its commander's art. The deck that has the card has a gr
 | `Card — note` | a note on the card, after ` — `, ` – ` or ` -- ` |
 | `Card -> Deck A; Deck B; Deck C` | the decks on one line, after an arrow, split with `;` (commanders have commas in their names) |
 | `title:` | the block's name (default *Shared cards*; also `título:`) |
+| `view: compact` | one line per card, with a pill per deck (default `view: cards`) |
 
 Write several cards in the same block, each followed by its decks, to keep every shared card in one note. Lines starting with `//` are comments.
+
+## Compact view
+
+The **Cards / Compact** buttons in the header switch the view, and the choice is saved in the block as `view: compact`. The compact view puts each card on one line: its art, its name, how many copies and decks, and a pill per deck with the commander's art. The deck that has the card is green with a check; click another pill to move the card there. Use it for a note that lists many shared cards.
+
+![The compact view: one line per card and a pill per deck](images/shared-compact.png)
 
 ## Moving the card
 

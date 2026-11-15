@@ -1,4 +1,4 @@
-import { Notice, setIcon, type MarkdownPostProcessorContext } from 'obsidian';
+import { MarkdownView, Notice, setIcon, type MarkdownPostProcessorContext } from 'obsidian';
 import type { ScryfallCard } from './card';
 import {
 	DECK_SORTS,
@@ -190,17 +190,42 @@ export async function editBlock(
 	const file = plugin.app.vault.getFileByPath(ctx.sourcePath);
 	if (!info || !file) return false;
 	const normalize = (t: string) => t.replace(/\r/g, '').trim();
+	/** The block's lines in the note, or null when they are not this block any more. */
+	const inner = (lines: string[]): string[] | null => {
+		const fence = lines[info.lineStart] ?? '';
+		const body = lines.slice(info.lineStart + 1, info.lineEnd);
+		return opening.test(fence) && normalize(body.join('\n')) === normalize(source) ? body : null;
+	};
+
+	// The note is open in an editor: change only the block's lines there, so the cursor
+	// and the scroll stay where they are (rewriting the whole file sends them to the top).
+	const editor = plugin.app.workspace
+		.getLeavesOfType('markdown')
+		.map((leaf) => leaf.view)
+		.find((view): view is MarkdownView => view instanceof MarkdownView && view.file?.path === file.path && view.getMode() === 'source')?.editor;
+	if (editor) {
+		const lines = editor.getValue().split('\n');
+		const body = inner(lines);
+		if (!body) return false;
+		const updated = change(body.join('\n'));
+		const scroll = editor.getScrollInfo();
+		if (body.length) {
+			const last = info.lineStart + body.length;
+			editor.replaceRange(updated, { line: info.lineStart + 1, ch: 0 }, { line: last, ch: lines[last]!.length });
+		} else {
+			editor.replaceRange(`${updated}\n`, { line: info.lineStart + 1, ch: 0 });
+		}
+		editor.scrollTo(scroll.left, scroll.top);
+		return true;
+	}
+
 	let done = false;
 	try {
 		await plugin.app.vault.process(file, (data) => {
 			const lines = data.split('\n');
-			const fence = lines[info.lineStart] ?? '';
-			const inner = lines.slice(info.lineStart + 1, info.lineEnd);
-			if (!opening.test(fence) || normalize(inner.join('\n')) !== normalize(source)) {
-				return data;
-			}
-			const updated = change(inner.join('\n')).split('\n');
-			lines.splice(info.lineStart + 1, inner.length, ...updated);
+			const body = inner(lines);
+			if (!body) return data;
+			lines.splice(info.lineStart + 1, body.length, ...change(body.join('\n')).split('\n'));
 			done = true;
 			return lines.join('\n');
 		});
